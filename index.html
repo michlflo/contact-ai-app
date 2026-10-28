@@ -797,7 +797,7 @@
 
                 // Präziser System-Prompt mit Anforderung exakter Gewerke & Daten
                 const systemPrompt = "Du bist ein hochpräziser KI-Extraktor für Firmenkontakte, Handwerk und Sanierung. Suche nach den exakten Firmen- und Impressumsdaten zur angegebenen Website/Domain (Ansprechpartner/Geschäftsführer, genaue Firma, Telefonnummer, E-Mail, Adresse PLZ/Ort). Bestimme präzise das Gewerk (z. B. Heizung & Sanitär, Elektro, Dachdecker, Maler) und den genauen Leistungsumfang (z. B. Gas- und Wasserinstallation, Badsanierung, Heizungsbau).";
-                const userQuery = `Extrahiere die exakten Kontaktdaten, das Gewerk und die Leistungen aus dem folgenden Webseiten-Text (${formattedUrl}). Nutze nur Informationen aus dem Text:\n\n${pageText}`;
+                const userQuery = `Extrahiere aus dem folgenden Webseiten-Text (${formattedUrl}) GENAU EINEN Kontakt (den Geschäftsführer/Ansprechpartner laut Impressum). Fülle ALLE Felder aus, soweit im Text vorhanden: firstName, lastName, organization (vollständiger Firmenname inkl. Rechtsform), title, email, phone, address (Straße, PLZ, Ort), website, trade (nur ein Gewerk aus der Liste im Schema), scopeOfServices (kommagetrennte Leistungen, z. B. Dachstühle, Holzriegelbau, Carports), notes (z. B. Öffnungszeiten, Firmensitz, UID). Schreibe nur in das jeweils passende Feld, nicht alles in ein Feld. Nutze nur Informationen aus dem Text:\n\n${pageText}`;
 
                 const payload = {
                     contents: [{ parts: [{ text: userQuery }] }],
