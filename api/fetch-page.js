@@ -36,9 +36,17 @@ export default async function handler(req, res) {
     };
 
     const base = target.origin;
-    const pages = [target.href, base + '/impressum', base + '/kontakt'];
-    const texts = await Promise.all(pages.map(get));
-    const text = texts.map(clean).filter(Boolean).join('\n---\n').slice(0, 15000);
-    if (!text) return res.status(502).json({ error: 'Webseite konnte nicht geladen werden' });
+    // Impressum/Kontakt zuerst (dort stehen die Kontaktdaten), Startseite zuletzt
+    const pages = [
+        { label: 'IMPRESSUM', url: base + '/impressum', max: 4000 },
+        { label: 'KONTAKT', url: base + '/kontakt', max: 2500 },
+        { label: 'STARTSEITE', url: target.href, max: 3500 },
+    ];
+    const texts = await Promise.all(pages.map(p => get(p.url)));
+    const text = pages
+        .map((p, i) => ({ p, t: clean(texts[i]) }))
+        .filter(x => x.t)
+        .map(x => `[${x.p.label}]\n${x.t.slice(0, x.p.max)}`)
+        .join('\n\n');    if (!text) return res.status(502).json({ error: 'Webseite konnte nicht geladen werden' });
     return res.status(200).json({ text });
 }
