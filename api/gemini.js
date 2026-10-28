@@ -17,7 +17,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'GEMINI_API_KEY ist nicht konfiguriert.' });
     }
 
-    const { model = 'gemini-3.8-flash', payload } = req.body;
+    const { model = 'gemini-flash-lite-latest', payload } = req.body;
 
     try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
