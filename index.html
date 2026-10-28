@@ -783,13 +783,24 @@
             showLoading(true, "Webseite & Impressum wird analysiert...", "KI sucht nach exakten Firmen- und Kontaktdaten sowie Gewerk...");
 
             try {
+                const pageRes = await fetch('/api/fetch-page', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: formattedUrl })
+                });
+                if (!pageRes.ok) {
+                    showToast("Webseite konnte nicht geladen werden.", "error");
+                    showLoading(false);
+                    return;
+                }
+                const { text: pageText } = await pageRes.json();
+
                 // Präziser System-Prompt mit Anforderung exakter Gewerke & Daten
                 const systemPrompt = "Du bist ein hochpräziser KI-Extraktor für Firmenkontakte, Handwerk und Sanierung. Suche nach den exakten Firmen- und Impressumsdaten zur angegebenen Website/Domain (Ansprechpartner/Geschäftsführer, genaue Firma, Telefonnummer, E-Mail, Adresse PLZ/Ort). Bestimme präzise das Gewerk (z. B. Heizung & Sanitär, Elektro, Dachdecker, Maler) und den genauen Leistungsumfang (z. B. Gas- und Wasserinstallation, Badsanierung, Heizungsbau).";
-                const userQuery = `Recherchiere die exakten Kontaktdaten, das Gewerk und die Leistungen zu dieser Firmen-Website: ${formattedUrl}. Analysiere das Impressum, den Firmennamen und die Branche exakt.`;
+                const userQuery = `Extrahiere die exakten Kontaktdaten, das Gewerk und die Leistungen aus dem folgenden Webseiten-Text (${formattedUrl}). Nutze nur Informationen aus dem Text:\n\n${pageText}`;
 
                 const payload = {
                     contents: [{ parts: [{ text: userQuery }] }],
-                    tools: [{ "google_search": {} }],
                     systemInstruction: {
                         parts: [{ text: systemPrompt }]
                     },
@@ -835,8 +846,11 @@
                     return;
                 }
 
+                showToast("KI-Analyse fehlgeschlagen. Bitte später erneut versuchen.", "error");
+
             } catch (error) {
                 console.error("Extraction error:", error);
+                showToast("KI-Analyse fehlgeschlagen. Bitte später erneut versuchen.", "error");
             } finally {
                 showLoading(false);
             }
