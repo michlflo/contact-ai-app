@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="de" class="h-full bg-slate-50">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,13 +42,15 @@
         }
     </script>
 </head>
+
 <body class="h-full font-sans text-slate-800 flex flex-col min-h-screen">
 
     <!-- Header / Navbar -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+                <div
+                    class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
                     <i class="fa-solid fa-address-card text-lg"></i>
                 </div>
                 <div>
@@ -55,15 +58,18 @@
                     <p class="text-xs text-slate-500">Link teilen & Kontaktdaten automatisch erfassen</p>
                 </div>
             </div>
-            
+
             <div class="flex items-center gap-3">
-                <span id="contactCountBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800">
+                <span id="contactCountBadge"
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800">
                     0 Kontakte gespeichert
                 </span>
-                <button onclick="openInstallModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-sky-600 hover:bg-sky-700 text-white shadow-sm transition">
+                <button onclick="openInstallModal()"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-sky-600 hover:bg-sky-700 text-white shadow-sm transition">
                     <i class="fa-solid fa-mobile-screen-button"></i> App installieren
                 </button>
-                <button onclick="exportAllContacts('vcf')" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                <button onclick="exportAllContacts('vcf')"
+                    class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
                     <i class="fa-solid fa-file-export text-slate-500"></i> Alle als vCard (.vcf)
                 </button>
             </div>
@@ -73,41 +79,48 @@
     <!-- Main View Navigation Tabs -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
-            <button id="view-tab-cards" onclick="switchMainView('cards')" class="px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm flex items-center gap-2 transition">
+            <button id="view-tab-cards" onclick="switchMainView('cards')"
+                class="px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm flex items-center gap-2 transition">
                 <i class="fa-solid fa-address-card"></i> Karten-Ansicht
             </button>
-            <button id="view-tab-matrix" onclick="switchMainView('matrix')" class="px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-2 transition">
+            <button id="view-tab-matrix" onclick="switchMainView('matrix')"
+                class="px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-2 transition">
                 <i class="fa-solid fa-table-cells"></i> Gewerk-Matrix (Übersicht)
             </button>
         </div>
     </div>
 
     <!-- Main Content Grid: CARDS VIEW -->
-    <main id="main-cards-view" class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
+    <main id="main-cards-view"
+        class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+
         <!-- Left Panel: Input Methods (URL / Text / Card Image) -->
         <section class="lg:col-span-5 space-y-6">
-            
+
             <!-- Quick Share Banner (Info) -->
             <div class="bg-gradient-to-r from-sky-500 to-indigo-600 rounded-2xl p-5 text-white shadow-lg">
                 <h2 class="text-base font-bold mb-1 flex items-center gap-2">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> KI-Sanierungs-Extraktion
                 </h2>
                 <p class="text-xs text-sky-100 leading-relaxed">
-                    Gib einen Link ein. Die KI zieht Kontaktdaten, <strong>Gewerk</strong> sowie den <strong>Leistungsumfang</strong> automatisch heraus.
+                    Gib einen Link ein. Die KI zieht Kontaktdaten, <strong>Gewerk</strong> sowie den
+                    <strong>Leistungsumfang</strong> automatisch heraus.
                 </p>
             </div>
 
             <!-- Input Tabs Card -->
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div class="flex border-b border-slate-200 bg-slate-50/50 p-1.5 gap-1">
-                    <button id="tab-url-btn" onclick="switchTab('url')" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg text-sky-600 bg-white shadow-sm flex items-center justify-center gap-2 transition">
+                    <button id="tab-url-btn" onclick="switchTab('url')"
+                        class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg text-sky-600 bg-white shadow-sm flex items-center justify-center gap-2 transition">
                         <i class="fa-solid fa-link"></i> Link teilen
                     </button>
-                    <button id="tab-text-btn" onclick="switchTab('text')" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-2 transition">
+                    <button id="tab-text-btn" onclick="switchTab('text')"
+                        class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-2 transition">
                         <i class="fa-solid fa-align-left"></i> Text / E-Mail
                     </button>
-                    <button id="tab-image-btn" onclick="switchTab('image')" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-2 transition">
+                    <button id="tab-image-btn" onclick="switchTab('image')"
+                        class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-2 transition">
                         <i class="fa-solid fa-image"></i> Visitenkarte
                     </button>
                 </div>
@@ -115,14 +128,17 @@
                 <!-- Tab 1: URL Input -->
                 <div id="tab-url" class="p-5 space-y-4">
                     <div>
-                        <label for="input-url" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                        <label for="input-url"
+                            class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                             Website-Link oder Profil-URL
                         </label>
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <div
+                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                                 <i class="fa-solid fa-globe"></i>
                             </div>
-                            <input type="url" id="input-url" placeholder="https://beispiel-sanierung.de oder Impressum-Link" 
+                            <input type="url" id="input-url"
+                                placeholder="https://beispiel-sanierung.de oder Impressum-Link"
                                 class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition">
                         </div>
                         <p class="text-[11px] text-slate-400 mt-1.5">
@@ -130,7 +146,8 @@
                         </p>
                     </div>
 
-                    <button id="btn-analyze-url" onclick="extractFromUrl()" class="w-full py-3 px-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 transition disabled:opacity-50">
+                    <button id="btn-analyze-url" onclick="extractFromUrl()"
+                        class="w-full py-3 px-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 transition disabled:opacity-50">
                         <i class="fa-solid fa-bolt"></i> Link analysieren & Kontakte extrahieren
                     </button>
                 </div>
@@ -138,13 +155,16 @@
                 <!-- Tab 2: Raw Text / Signatures -->
                 <div id="tab-text" class="p-5 space-y-4 hidden">
                     <div>
-                        <label for="input-text" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                        <label for="input-text"
+                            class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                             E-Mail Signatur oder Textkopie
                         </label>
-                        <textarea id="input-text" rows="5" placeholder="Hans Müller&#10;Müller Heizungs- & Badbau GmbH&#10;Gewerk: Sanitär & Heizung&#10;Leistungen: Badsanierung, Wärmepumpen&#10;Mobil: +49 170 1234567&#10;E-Mail: info@mueller-bad.de" 
+                        <textarea id="input-text" rows="5"
+                            placeholder="Hans Müller&#10;Müller Heizungs- & Badbau GmbH&#10;Gewerk: Sanitär & Heizung&#10;Leistungen: Badsanierung, Wärmepumpen&#10;Mobil: +49 170 1234567&#10;E-Mail: info@mueller-bad.de"
                             class="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition"></textarea>
                     </div>
-                    <button id="btn-analyze-text" onclick="extractFromText()" class="w-full py-3 px-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 transition disabled:opacity-50">
+                    <button id="btn-analyze-text" onclick="extractFromText()"
+                        class="w-full py-3 px-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 transition disabled:opacity-50">
                         <i class="fa-solid fa-microchip"></i> Text per KI strukturieren
                     </button>
                 </div>
@@ -155,20 +175,26 @@
                         <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                             Visitenkarte hochladen / Foto aufnehmen
                         </label>
-                        <div id="drop-zone" class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center bg-slate-50 hover:bg-slate-100 cursor-pointer transition relative">
-                            <input type="file" id="input-image" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleImageSelect(event)">
+                        <div id="drop-zone"
+                            class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center bg-slate-50 hover:bg-slate-100 cursor-pointer transition relative">
+                            <input type="file" id="input-image" accept="image/*"
+                                class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleImageSelect(event)">
                             <div id="upload-placeholder" class="space-y-2">
                                 <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400"></i>
-                                <p class="text-xs font-medium text-slate-600">Klicke zum Auswählen oder ziehe ein Bild hierher</p>
+                                <p class="text-xs font-medium text-slate-600">Klicke zum Auswählen oder ziehe ein Bild
+                                    hierher</p>
                                 <p class="text-[10px] text-slate-400">PNG, JPG, WEBP (Visitenkarte, Briefkopf)</p>
                             </div>
                             <div id="upload-preview-container" class="hidden space-y-2">
-                                <img id="upload-preview" class="max-h-40 mx-auto rounded-lg shadow-sm border border-slate-200">
-                                <p id="upload-filename" class="text-xs font-semibold text-slate-700 truncate max-w-xs mx-auto"></p>
+                                <img id="upload-preview"
+                                    class="max-h-40 mx-auto rounded-lg shadow-sm border border-slate-200">
+                                <p id="upload-filename"
+                                    class="text-xs font-semibold text-slate-700 truncate max-w-xs mx-auto"></p>
                             </div>
                         </div>
                     </div>
-                    <button id="btn-analyze-image" onclick="extractFromImage()" disabled class="w-full py-3 px-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button id="btn-analyze-image" onclick="extractFromImage()" disabled
+                        class="w-full py-3 px-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fa-solid fa-eye"></i> Visitenkarte scannen (Vision KI)
                     </button>
                 </div>
@@ -176,20 +202,24 @@
             </div>
 
             <!-- Loading Indicator Widget -->
-            <div id="loading-state" class="hidden bg-white border border-sky-100 rounded-2xl p-6 text-center space-y-3 shadow-md">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-sky-50 text-sky-600 animate-spin">
+            <div id="loading-state"
+                class="hidden bg-white border border-sky-100 rounded-2xl p-6 text-center space-y-3 shadow-md">
+                <div
+                    class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-sky-50 text-sky-600 animate-spin">
                     <i class="fa-solid fa-circle-notch text-xl"></i>
                 </div>
                 <div>
                     <h3 id="loading-title" class="font-semibold text-slate-800 text-sm">KI analysiert Daten...</h3>
-                    <p id="loading-desc" class="text-xs text-slate-500 mt-0.5">Website-Inhalte werden ausgewertet und Kontaktdaten getrennt.</p>
+                    <p id="loading-desc" class="text-xs text-slate-500 mt-0.5">Website-Inhalte werden ausgewertet und
+                        Kontaktdaten getrennt.</p>
                 </div>
             </div>
 
             <!-- Manual Add Quick Trigger -->
             <div class="flex justify-between items-center text-xs px-1 text-slate-500">
                 <span>Oder manuell hinzufügen?</span>
-                <button onclick="openEditModal(null)" class="text-sky-600 font-semibold hover:underline flex items-center gap-1">
+                <button onclick="openEditModal(null)"
+                    class="text-sky-600 font-semibold hover:underline flex items-center gap-1">
                     <i class="fa-solid fa-plus"></i> Leeres Formular öffnen
                 </button>
             </div>
@@ -198,18 +228,20 @@
 
         <!-- Right Panel: Contact List & Management -->
         <section class="lg:col-span-7 space-y-4 flex flex-col">
-            
+
             <!-- Controls Bar -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div
+                class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div class="relative w-full sm:w-56">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
-                    <input type="text" id="search-input" oninput="renderContacts()" placeholder="Suchen..." 
+                    <input type="text" id="search-input" oninput="renderContacts()" placeholder="Suchen..."
                         class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
                 </div>
-                
+
                 <!-- Status Filter -->
                 <div class="w-full sm:w-auto flex items-center gap-2">
-                    <select id="status-filter" onchange="renderContacts()" class="w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-700 focus:bg-white focus:ring-2 focus:ring-sky-500">
+                    <select id="status-filter" onchange="renderContacts()"
+                        class="w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-700 focus:bg-white focus:ring-2 focus:ring-sky-500">
                         <option value="ALL">Alle Status</option>
                         <option value="NEU">Neu / Geplant</option>
                         <option value="ANGEFORDERT">Angebot angefordert</option>
@@ -219,10 +251,12 @@
                         <option value="ABGELEHNT">Abgelehnt</option>
                     </select>
 
-                    <button onclick="exportAllContacts('json')" class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center gap-1 whitespace-nowrap">
+                    <button onclick="exportAllContacts('json')"
+                        class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center gap-1 whitespace-nowrap">
                         <i class="fa-solid fa-code"></i> JSON
                     </button>
-                    <button onclick="clearAllContacts()" class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition flex items-center gap-1 whitespace-nowrap">
+                    <button onclick="clearAllContacts()"
+                        class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition flex items-center gap-1 whitespace-nowrap">
                         <i class="fa-solid fa-trash-can"></i> Löschen
                     </button>
                 </div>
@@ -233,14 +267,17 @@
                 <div id="contact-list" class="space-y-4"></div>
 
                 <!-- Empty State -->
-                <div id="empty-state" class="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center space-y-3">
-                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300 text-2xl">
+                <div id="empty-state"
+                    class="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center space-y-3">
+                    <div
+                        class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300 text-2xl">
                         <i class="fa-solid fa-toolbox"></i>
                     </div>
                     <div>
                         <h3 class="font-semibold text-slate-700 text-sm">Noch keine Sanierungskontakte erfasst</h3>
                         <p class="text-xs text-slate-400 max-w-xs mx-auto mt-1">
-                            Teile einen Link zu einem Handwerks- oder Sanierungsbetrieb auf der linken Seite, um Gewerk & Kontaktdaten zu erfassen.
+                            Teile einen Link zu einem Handwerks- oder Sanierungsbetrieb auf der linken Seite, um Gewerk
+                            & Kontaktdaten zu erfassen.
                         </p>
                     </div>
                 </div>
@@ -258,9 +295,11 @@
                     <h2 class="font-bold text-slate-900 text-base flex items-center gap-2">
                         <i class="fa-solid fa-table-cells text-sky-600"></i> Sanierungs-Übersichtsmatrix
                     </h2>
-                    <p class="text-xs text-slate-500">Gewerke in den Zeilen, zugeordnete Firmen/Handwerker mit ihrem jeweiligen Angebotsstatus in den Spalten.</p>
+                    <p class="text-xs text-slate-500">Gewerke in den Zeilen, zugeordnete Firmen/Handwerker mit ihrem
+                        jeweiligen Angebotsstatus in den Spalten.</p>
                 </div>
-                <button onclick="openEditModal(null)" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+                <button onclick="openEditModal(null)"
+                    class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
                     <i class="fa-solid fa-plus"></i> Kontakt hinzufügen
                 </button>
             </div>
@@ -269,7 +308,8 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse min-w-[700px]">
                     <thead>
-                        <tr class="bg-slate-50 text-slate-700 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                        <tr
+                            class="bg-slate-50 text-slate-700 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
                             <th class="py-3 px-4 w-1/4">Gewerk / Handwerk</th>
                             <th class="py-3 px-4">Profile & Status der Angebotsphase</th>
                         </tr>
@@ -279,7 +319,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <div id="matrix-empty-state" class="hidden text-center py-12 text-slate-400 text-xs">
                 Keine Kontakte für die Matrix-Darstellung vorhanden.
             </div>
@@ -287,39 +327,47 @@
     </main>
 
     <!-- Modal for Editing/Viewing Contact Details -->
-    <div id="edit-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-100 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+    <div id="edit-modal"
+        class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div
+            class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-100 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                 <h3 id="modal-title" class="font-bold text-slate-800 text-sm flex items-center gap-2">
                     <i class="fa-solid fa-user-pen text-sky-600"></i> Kontakt & Gewerk bearbeiten
                 </h3>
-                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200 transition">
+                <button onclick="closeEditModal()"
+                    class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200 transition">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <form id="contact-form" onsubmit="saveContactForm(event)" class="p-6 space-y-4 overflow-y-auto flex-1 text-xs">
+            <form id="contact-form" onsubmit="saveContactForm(event)"
+                class="p-6 space-y-4 overflow-y-auto flex-1 text-xs">
                 <input type="hidden" id="form-id">
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Vorname</label>
-                        <input type="text" id="form-firstName" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                        <input type="text" id="form-firstName"
+                            class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
                     </div>
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Nachname *</label>
-                        <input type="text" id="form-lastName" required class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                        <input type="text" id="form-lastName" required
+                            class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Firma / Unternehmen</label>
-                        <input type="text" id="form-organization" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                        <input type="text" id="form-organization"
+                            class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
                     </div>
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Position / Rolle</label>
-                        <input type="text" id="form-title" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                        <input type="text" id="form-title"
+                            class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
                     </div>
                 </div>
 
@@ -328,7 +376,8 @@
                     <label class="block font-bold text-slate-800">
                         <i class="fa-solid fa-bars-progress text-sky-600 mr-1"></i> Status der Angebotsphase
                     </label>
-                    <select id="form-status" class="w-full p-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-700 focus:ring-2 focus:ring-sky-500">
+                    <select id="form-status"
+                        class="w-full p-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-700 focus:ring-2 focus:ring-sky-500">
                         <option value="NEU">⚪ Neu / Geplant</option>
                         <option value="ANGEFORDERT">🟡 Angebot angefordert</option>
                         <option value="ERHALTEN">🔵 Angebot erhalten</option>
@@ -344,7 +393,8 @@
                         <label class="block font-bold text-amber-900 mb-1">
                             <i class="fa-solid fa-hammer mr-1"></i> Gewerk / Handwerk
                         </label>
-                        <select id="form-trade-select" onchange="toggleCustomTradeInput()" class="w-full p-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 mb-1.5 font-medium">
+                        <select id="form-trade-select" onchange="toggleCustomTradeInput()"
+                            class="w-full p-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 mb-1.5 font-medium">
                             <option value="">-- Gewerk auswählen --</option>
                             <optgroup label="Planung & Bauleitung">
                                 <option value="Planung">Planung</option>
@@ -358,7 +408,8 @@
                                 <option value="Außenputz & Fassade">Außenputz & Fassade</option>
                             </optgroup>
                             <optgroup label="Haustechnik & Elektro">
-                                <option value="HKLS (Heizung, Klima, Lüftung, Sanitär)">HKLS (Heizung, Klima, Lüftung, Sanitär)</option>
+                                <option value="HKLS (Heizung, Klima, Lüftung, Sanitär)">HKLS (Heizung, Klima, Lüftung,
+                                    Sanitär)</option>
                                 <option value="Elektro / PV">Elektro / PV</option>
                                 <option value="Strom">Strom</option>
                                 <option value="Wasser">Wasser</option>
@@ -380,69 +431,83 @@
                             </optgroup>
                             <option value="CUSTOM">➕ Anderes Gewerk eingeben...</option>
                         </select>
-                        <input type="text" id="form-trade" placeholder="Individuelles Gewerk eingeben..." class="w-full p-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 hidden">
+                        <input type="text" id="form-trade" placeholder="Individuelles Gewerk eingeben..."
+                            class="w-full p-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 hidden">
                     </div>
                     <div>
                         <label class="block font-bold text-amber-900 mb-1">
                             <i class="fa-solid fa-clipboard-list mr-1"></i> Leistungsumfang Sanierung
                         </label>
-                        <textarea id="form-scopeOfServices" rows="2" placeholder="z. B. Badsanierung, Wärmepumpen, Altbausanierung" class="w-full p-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"></textarea>
+                        <textarea id="form-scopeOfServices" rows="2"
+                            placeholder="z. B. Badsanierung, Wärmepumpen, Altbausanierung"
+                            class="w-full p-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"></textarea>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">E-Mail</label>
-                        <input type="email" id="form-email" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                        <input type="email" id="form-email"
+                            class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
                     </div>
                     <div>
                         <label class="block font-semibold text-slate-700 mb-1">Telefon / Handy</label>
-                        <input type="tel" id="form-phone" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                        <input type="tel" id="form-phone"
+                            class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
                     </div>
                 </div>
 
                 <div>
                     <label class="block font-semibold text-slate-700 mb-1">Website URL</label>
-                    <input type="url" id="form-website" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                    <input type="url" id="form-website"
+                        class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
                 </div>
 
                 <div>
                     <label class="block font-semibold text-slate-700 mb-1">Adresse</label>
-                    <input type="text" id="form-address" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                    <input type="text" id="form-address"
+                        class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
                 </div>
 
                 <div>
                     <label class="block font-semibold text-slate-700 mb-1">Notizen</label>
-                    <textarea id="form-notes" rows="2" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500"></textarea>
+                    <textarea id="form-notes" rows="2"
+                        class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500"></textarea>
                 </div>
 
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition font-medium">Abbrechen</button>
-                    <button type="submit" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition font-semibold shadow-md">Speichern</button>
+                    <button type="button" onclick="closeEditModal()"
+                        class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition font-medium">Abbrechen</button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition font-semibold shadow-md">Speichern</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- PWA Installation Modal -->
-    <div id="install-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div id="install-modal"
+        class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                 <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                     <i class="fa-solid fa-mobile-screen-button text-sky-600"></i> Als App auf dem Smartphone
                 </h3>
-                <button onclick="closeInstallModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200 transition">
+                <button onclick="closeInstallModal()"
+                    class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200 transition">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
             <div class="p-6 space-y-4">
                 <p class="text-xs text-slate-600 leading-relaxed">
-                    Du kannst diese Anwendung wie eine echte App auf deinem Startbildschirm speichern und Links direkt aus dem Safari- oder Chrome-Browser teilen:
+                    Du kannst diese Anwendung wie eine echte App auf deinem Startbildschirm speichern und Links direkt
+                    aus dem Safari- oder Chrome-Browser teilen:
                 </p>
 
                 <div id="install-prompt-area" class="hidden">
-                    <button onclick="triggerPWAInstall()" class="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                    <button onclick="triggerPWAInstall()"
+                        class="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
                         <i class="fa-solid fa-download"></i> Jetzt installieren (1-Klick)
                     </button>
                 </div>
@@ -452,8 +517,10 @@
                         <i class="fa-brands fa-apple text-sm"></i> iPhone / iPad (Safari):
                     </div>
                     <ol class="list-decimal pl-4 space-y-1 text-slate-600 text-[11px]">
-                        <li>Tippe unten im Safari-Browser auf den <strong>Teilen-Button</strong> <i class="fa-solid fa-arrow-up-from-bracket"></i>.</li>
-                        <li>Wähle im Menü <strong>"Zum Home-Bildschirm"</strong> <i class="fa-regular fa-square-plus"></i>.</li>
+                        <li>Tippe unten im Safari-Browser auf den <strong>Teilen-Button</strong> <i
+                                class="fa-solid fa-arrow-up-from-bracket"></i>.</li>
+                        <li>Wähle im Menü <strong>"Zum Home-Bildschirm"</strong> <i
+                                class="fa-regular fa-square-plus"></i>.</li>
                         <li>Tippe oben rechts auf <strong>Hinzufügen</strong>.</li>
                     </ol>
 
@@ -461,20 +528,24 @@
                         <i class="fa-brands fa-android text-sm text-emerald-600"></i> Android (Chrome / Edge):
                     </div>
                     <ol class="list-decimal pl-4 space-y-1 text-slate-600 text-[11px]">
-                        <li>Tippe oben rechts auf das <strong>Drei-Punkte-Menü</strong> <i class="fa-solid fa-ellipsis-vertical"></i>.</li>
-                        <li>Wähle <strong>"App installieren"</strong> oder <strong>"Zum Startbildschirm hinzufügen"</strong>.</li>
+                        <li>Tippe oben rechts auf das <strong>Drei-Punkte-Menü</strong> <i
+                                class="fa-solid fa-ellipsis-vertical"></i>.</li>
+                        <li>Wähle <strong>"App installieren"</strong> oder <strong>"Zum Startbildschirm
+                                hinzufügen"</strong>.</li>
                     </ol>
                 </div>
             </div>
 
             <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 text-right">
-                <button onclick="closeInstallModal()" class="px-4 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition">Verstanden</button>
+                <button onclick="closeInstallModal()"
+                    class="px-4 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition">Verstanden</button>
             </div>
         </div>
     </div>
 
     <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300">
+    <div id="toast"
+        class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300">
         <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
         <span id="toast-message" class="text-xs font-medium">Aktion erfolgreich</span>
     </div>
@@ -556,7 +627,7 @@
                 }]
             };
             const stringManifest = JSON.stringify(manifestData);
-            const blob = new Blob([stringManifest], {type: 'application/json'});
+            const blob = new Blob([stringManifest], { type: 'application/json' });
             const manifestURL = URL.createObjectURL(blob);
             const linkEl = document.createElement('link');
             linkEl.rel = 'manifest';
@@ -658,10 +729,10 @@
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 const result = e.target.result;
                 currentImageBase64 = result.split(',')[1];
-                
+
                 document.getElementById('upload-preview').src = result;
                 document.getElementById('upload-filename').innerText = file.name;
                 document.getElementById('upload-placeholder').classList.add('hidden');
@@ -712,12 +783,8 @@
             showLoading(true, "Webseite & Impressum wird analysiert...", "KI sucht nach exakten Firmen- und Kontaktdaten sowie Gewerk...");
 
             try {
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
                 // Präziser System-Prompt mit Anforderung exakter Gewerke & Daten
                 const systemPrompt = "Du bist ein hochpräziser KI-Extraktor für Firmenkontakte, Handwerk und Sanierung. Suche nach den exakten Firmen- und Impressumsdaten zur angegebenen Website/Domain (Ansprechpartner/Geschäftsführer, genaue Firma, Telefonnummer, E-Mail, Adresse PLZ/Ort). Bestimme präzise das Gewerk (z. B. Heizung & Sanitär, Elektro, Dachdecker, Maler) und den genauen Leistungsumfang (z. B. Gas- und Wasserinstallation, Badsanierung, Heizungsbau).";
-                
                 const userQuery = `Recherchiere die exakten Kontaktdaten, das Gewerk und die Leistungen zu dieser Firmen-Website: ${formattedUrl}. Analysiere das Impressum, den Firmennamen und die Branche exakt.`;
 
                 const payload = {
@@ -732,10 +799,10 @@
                     }
                 };
 
-                const response = await fetch(apiUrl, {
+                const response = await fetch('/api/gemini', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ model: 'gemini-2.0-flash-exp', payload })
                 });
 
                 if (response.ok) {
@@ -748,7 +815,7 @@
                         return;
                     }
                 }
-                
+
                 // Exakter Fallback für steiner-garsten.at falls API offline/geblockt
                 if (formattedUrl.includes("steiner-garsten")) {
                     addExtractedContacts([{
@@ -786,9 +853,6 @@
             showLoading(true, "Text wird analysiert...", "Extrahiere Namen, Gewerke, Sanierungsleistungen und Nummern.");
 
             try {
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
                 const payload = {
                     contents: [{ parts: [{ text: `Extrahiere Kontaktdaten, Gewerk und Sanierungs-Leistungsumfang aus folgendem Text:\n\n${textInput}` }] }],
                     generationConfig: {
@@ -797,7 +861,7 @@
                     }
                 };
 
-                const data = await fetchGeminiWithBackoff(apiUrl, payload);
+                const data = await fetchGeminiWithBackoff('/api/gemini', { model: 'gemini-2.0-flash-exp', payload });
                 const jsonText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (jsonText) {
@@ -822,9 +886,6 @@
             showLoading(true, "Visitenkarte wird gescannt...", "Analysiere Kontaktdaten und Handwerksgewerk.");
 
             try {
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
                 const payload = {
                     contents: [
                         {
@@ -846,7 +907,7 @@
                     }
                 };
 
-                const data = await fetchGeminiWithBackoff(apiUrl, payload);
+                const data = await fetchGeminiWithBackoff('/api/gemini', { model: 'gemini-2.0-flash-exp', payload });
                 const jsonText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (jsonText) {
@@ -954,7 +1015,7 @@
 
             contacts.forEach(c => {
                 const rawTrade = (c.trade || 'Sanierung / Allgemein').trim();
-                
+
                 // Prüfe ob das Profil-Gewerk einem der Standardgewerke entspricht
                 let matchedTrade = tradeOrder.find(t => t.toLowerCase() === rawTrade.toLowerCase());
                 if (!matchedTrade) {
@@ -1060,7 +1121,7 @@
             }
 
             emptyState.classList.add('hidden');
-            
+
             container.innerHTML = filtered.map(c => {
                 const cStatus = c.status || 'NEU';
                 const stCfg = STATUS_CONFIG[cStatus] || STATUS_CONFIG['NEU'];
@@ -1193,7 +1254,7 @@
                     document.getElementById('form-firstName').value = c.firstName || '';
                     document.getElementById('form-lastName').value = c.lastName || '';
                     document.getElementById('form-organization').value = c.organization || '';
-                    
+
                     // Gewerk-Select oder Custom-Anzeige
                     const currentTrade = c.trade || '';
                     let matchedOption = Array.from(selectEl.options).some(opt => opt.value === currentTrade);
@@ -1382,7 +1443,7 @@
             const message = document.getElementById('toast-message');
 
             message.innerText = msg;
-            
+
             if (type === 'error') {
                 icon.className = "fa-solid fa-circle-exclamation text-rose-400";
             } else if (type === 'info') {
@@ -1399,7 +1460,7 @@
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/[&<>"']/g, function(m) {
+            return str.replace(/[&<>"']/g, function (m) {
                 return {
                     '&': '&amp;',
                     '<': '&lt;',
@@ -1411,4 +1472,5 @@
         }
     </script>
 </body>
+
 </html>
