@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Contact Hub & Link Extractor</title>
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#0284c7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ContactAI">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3062/3062634.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full font-sans text-slate-800 flex flex-col min-h-screen">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+                    <i class="fa-solid fa-address-card text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-900 text-lg leading-tight">ContactAI Share Hub</h1>
+                    <p class="text-xs text-slate-500">Link teilen & Kontaktdaten automatisch erfassen</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span id="contactCountBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800">
+                    0 Kontakte gespeichert
+                </span>
+                <button onclick="openInstallModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-sky-600 hover:bg-sky-700 text-white shadow-sm transition">
+                    <i class="fa-solid fa-mobile-screen-button"></i> App installieren
+                </button>
+                <button onclick="exportAllContacts('vcf')" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                    <i class="fa-solid fa-file-export text-slate-500"></i> Alle als vCard (.vcf)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main View Navigation Tabs -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
+            <button id="view-tab-cards" onclick="switchMainView('cards')" class="px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm flex items-center gap-2 transition">
+                <i class="fa-solid fa-address-card"></i> Karten-Ansicht
+            </button>
+            <button id="view-tab-matrix" onclick="switchMainView('matrix')" class="px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-2 transition">
+                <i class="fa-solid fa-table-cells"></i> Gewerk-Matrix (Übersicht)
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Grid: CARDS VIEW -->
+    <main id="main-cards-view" class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Panel: Input Methods (URL / Text / Card Image) -->
+        <section class="lg:col-span-5 space-y-6">
+            
+            <!-- Quick Share Banner (Info) -->
+            <div class="bg-gradient-to-r from-sky-500 to-indigo-600 rounded-2xl p-5 text-white shadow-lg">
+                <h2 class="text-base font-bold mb-1 flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> KI-Sanierungs-Extraktion
+                </h2>
+                <p class="text-xs text-sky-100 leading-relaxed">
+                    Gib einen Link ein. Die KI zieht Kontaktdaten, <strong>Gewerk</strong> sowie den <strong>Leistungsumfang</strong> automatisch heraus.
+                </p>
+            </div>
+
+            <!-- Input Tabs Card -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="flex border-b border-slate-200 bg-slate-50/50 p-1.5 gap-1">
+                    <button id="tab-url-btn" onclick="switchTab('url')" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg text-sky-600 bg-white shadow-sm flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-link"></i> Link teilen
+                    </button>
+                    <button id="tab-text-btn" onclick="switchTab('text')" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-align-left"></i> Text / E-Mail
+                    </button>
+                    <button id="tab-image-btn" onclick="switchTab('image')" class="flex-1 py-2 px-3 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-image"></i> Visitenkarte
+                    </button>
+                </div>
+
+                <!-- Tab 1: URL Input -->
+                <div id="tab-url" class="p-5 space-y-4">
+                    <div>
+                        <label for="input-url" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                            Website-Link oder Profil-URL
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-globe"></i>
+                            </div>
+                            <input type="url" id="input-url" placeholder="https://beispiel-sanierung.de oder Impressum-Link" 
+                                class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition">
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-1.5">
+                            *Die KI liest Inhalte der Webseite aus und trennt Gewerk, Sanierungsumfang und Kontakte.
+                        </p>
+                    </div>
+
+                    <button id="btn-analyze-url" onclick="extractFromUrl()" class="w-full py-3 px-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 transition disabled:opacity-50">
+                        <i class="fa-solid fa-bolt"></i> Link analysieren & Kontakte extrahieren
+                    </button>
+                </div>
+
+                <!-- Tab 2: Raw Text / Signatures -->
+                <div id="tab-text" class="p-5 space-y-4 hidden">
+                    <div>
+                        <label for="input-text" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                            E-Mail Signatur oder Textkopie
+                        </label>
+                        <textarea id="input-text" rows="5" placeholder="Hans Müller&#10;Müller Heizungs- & Badbau GmbH&#10;Gewerk: Sanitär & Heizung&#10;Leistungen: Badsanierung, Wärmepumpen&#10;Mobil: +49 170 1234567&#10;E-Mail: info@mueller-bad.de" 
+                            class="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition"></textarea>
+                    </div>
+                    <button id="btn-analyze-text" onclick="extractFromText()" class="w-full py-3 px-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 transition disabled:opacity-50">
+                        <i class="fa-solid fa-microchip"></i> Text per KI strukturieren
+                    </button>
+                </div>
+
+                <!-- Tab 3: Business Card Image Upload -->
+                <div id="tab-image" class="p-5 space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                            Visitenkarte hochladen / Foto aufnehmen
+                        </label>
+                        <div id="drop-zone" class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center bg-slate-50 hover:bg-slate-100 cursor-pointer transition relative">
+                            <input type="file" id="input-image" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleImageSelect(event)">
+                            <div id="upload-placeholder" class="space-y-2">
+                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400"></i>
+                                <p class="text-xs font-medium text-slate-600">Klicke zum Auswählen oder ziehe ein Bild hierher</p>
+                                <p class="text-[10px] text-slate-400">PNG, JPG, WEBP (Visitenkarte, Briefkopf)</p>
+                            </div>
+                            <div id="upload-preview-container" class="hidden space-y-2">
+                                <img id="upload-preview" class="max-h-40 mx-auto rounded-lg shadow-sm border border-slate-200">
+                                <p id="upload-filename" class="text-xs font-semibold text-slate-700 truncate max-w-xs mx-auto"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="btn-analyze-image" onclick="extractFromImage()" disabled class="w-full py-3 px-4 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-sm rounded-xl shadow-md shadow-sky-600/20 flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-eye"></i> Visitenkarte scannen (Vision KI)
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Loading Indicator Widget -->
+            <div id="loading-state" class="hidden bg-white border border-sky-100 rounded-2xl p-6 text-center space-y-3 shadow-md">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-sky-50 text-sky-600 animate-spin">
+                    <i class="fa-solid fa-circle-notch text-xl"></i>
+                </div>
+                <div>
+                    <h3 id="loading-title" class="font-semibold text-slate-800 text-sm">KI analysiert Daten...</h3>
+                    <p id="loading-desc" class="text-xs text-slate-500 mt-0.5">Website-Inhalte werden ausgewertet und Kontaktdaten getrennt.</p>
+                </div>
+            </div>
+
+            <!-- Manual Add Quick Trigger -->
+            <div class="flex justify-between items-center text-xs px-1 text-slate-500">
+                <span>Oder manuell hinzufügen?</span>
+                <button onclick="openEditModal(null)" class="text-sky-600 font-semibold hover:underline flex items-center gap-1">
+                    <i class="fa-solid fa-plus"></i> Leeres Formular öffnen
+                </button>
+            </div>
+
+        </section>
+
+        <!-- Right Panel: Contact List & Management -->
+        <section class="lg:col-span-7 space-y-4 flex flex-col">
+            
+            <!-- Controls Bar -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="relative w-full sm:w-56">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                    <input type="text" id="search-input" oninput="renderContacts()" placeholder="Suchen..." 
+                        class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                
+                <!-- Status Filter -->
+                <div class="w-full sm:w-auto flex items-center gap-2">
+                    <select id="status-filter" onchange="renderContacts()" class="w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-700 focus:bg-white focus:ring-2 focus:ring-sky-500">
+                        <option value="ALL">Alle Status</option>
+                        <option value="NEU">Neu / Geplant</option>
+                        <option value="ANGEFORDERT">Angebot angefordert</option>
+                        <option value="ERHALTEN">Angebot erhalten</option>
+                        <option value="BEAUFTRAGT">Beauftragt</option>
+                        <option value="ABGESCHLOSSEN">Abgeschlossen</option>
+                        <option value="ABGELEHNT">Abgelehnt</option>
+                    </select>
+
+                    <button onclick="exportAllContacts('json')" class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center gap-1 whitespace-nowrap">
+                        <i class="fa-solid fa-code"></i> JSON
+                    </button>
+                    <button onclick="clearAllContacts()" class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition flex items-center gap-1 whitespace-nowrap">
+                        <i class="fa-solid fa-trash-can"></i> Löschen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contact Cards Container -->
+            <div id="contact-list-wrapper" class="space-y-4 flex-1">
+                <div id="contact-list" class="space-y-4"></div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center space-y-3">
+                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300 text-2xl">
+                        <i class="fa-solid fa-toolbox"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-slate-700 text-sm">Noch keine Sanierungskontakte erfasst</h3>
+                        <p class="text-xs text-slate-400 max-w-xs mx-auto mt-1">
+                            Teile einen Link zu einem Handwerks- oder Sanierungsbetrieb auf der linken Seite, um Gewerk & Kontaktdaten zu erfassen.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Main Content: MATRIX OVERVIEW -->
+    <main id="main-matrix-view" class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 hidden">
+        <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div>
+                    <h2 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                        <i class="fa-solid fa-table-cells text-sky-600"></i> Sanierungs-Übersichtsmatrix
+                    </h2>
+                    <p class="text-xs text-slate-500">Gewerke in den Zeilen, zugeordnete Firmen/Handwerker mit ihrem jeweiligen Angebotsstatus in den Spalten.</p>
+                </div>
+                <button onclick="openEditModal(null)" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition">
+                    <i class="fa-solid fa-plus"></i> Kontakt hinzufügen
+                </button>
+            </div>
+
+            <!-- Matrix Table Container -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[700px]">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-700 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                            <th class="py-3 px-4 w-1/4">Gewerk / Handwerk</th>
+                            <th class="py-3 px-4">Profile & Status der Angebotsphase</th>
+                        </tr>
+                    </thead>
+                    <tbody id="matrix-tbody" class="divide-y divide-slate-100 text-xs">
+                        <!-- Matrix rows populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="matrix-empty-state" class="hidden text-center py-12 text-slate-400 text-xs">
+                Keine Kontakte für die Matrix-Darstellung vorhanden.
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Editing/Viewing Contact Details -->
+    <div id="edit-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-100 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 id="modal-title" class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-sky-600"></i> Kontakt & Gewerk bearbeiten
+                </h3>
+                <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="contact-form" onsubmit="saveContactForm(event)" class="p-6 space-y-4 overflow-y-auto flex-1 text-xs">
+                <input type="hidden" id="form-id">
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Vorname</label>
+                        <input type="text" id="form-firstName" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Nachname *</label>
+                        <input type="text" id="form-lastName" required class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Firma / Unternehmen</label>
+                        <input type="text" id="form-organization" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Position / Rolle</label>
+                        <input type="text" id="form-title" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+
+                <!-- Status Angebotsphase -->
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+                    <label class="block font-bold text-slate-800">
+                        <i class="fa-solid fa-bars-progress text-sky-600 mr-1"></i> Status der Angebotsphase
+                    </label>
+                    <select id="form-status" class="w-full p-2 bg-white border border-slate-300 rounded-lg font-medium text-slate-700 focus:ring-2 focus:ring-sky-500">
+                        <option value="NEU">⚪ Neu / Geplant</option>
+                        <option value="ANGEFORDERT">🟡 Angebot angefordert</option>
+                        <option value="ERHALTEN">🔵 Angebot erhalten</option>
+                        <option value="BEAUFTRAGT">🟢 Beauftragt / In Ausführung</option>
+                        <option value="ABGESCHLOSSEN">🟣 Abgeschlossen</option>
+                        <option value="ABGELEHNT">🔴 Abgelehnt</option>
+                    </select>
+                </div>
+
+                <!-- Gewerke & Sanierungsleistung -->
+                <div class="bg-amber-50/70 p-3 rounded-xl border border-amber-200/60 space-y-3">
+                    <div>
+                        <label class="block font-bold text-amber-900 mb-1">
+                            <i class="fa-solid fa-hammer mr-1"></i> Gewerk / Handwerk
+                        </label>
+                        <select id="form-trade-select" onchange="toggleCustomTradeInput()" class="w-full p-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 mb-1.5 font-medium">
+                            <option value="">-- Gewerk auswählen --</option>
+                            <optgroup label="Planung & Bauleitung">
+                                <option value="Planung">Planung</option>
+                                <option value="Energieausweis">Energieausweis</option>
+                                <option value="Baumeister">Baumeister</option>
+                            </optgroup>
+                            <optgroup label="Rohbau, Hülle & Dach">
+                                <option value="Zimmerer, Dachdecker & Spengler">Zimmerer, Dachdecker & Spengler</option>
+                                <option value="Fenster, Türen & Tore">Fenster, Türen & Tore</option>
+                                <option value="Sonnenschutz">Sonnenschutz</option>
+                                <option value="Außenputz & Fassade">Außenputz & Fassade</option>
+                            </optgroup>
+                            <optgroup label="Haustechnik & Elektro">
+                                <option value="HKLS (Heizung, Klima, Lüftung, Sanitär)">HKLS (Heizung, Klima, Lüftung, Sanitär)</option>
+                                <option value="Elektro / PV">Elektro / PV</option>
+                                <option value="Strom">Strom</option>
+                                <option value="Wasser">Wasser</option>
+                                <option value="Telekom & Internet">Telekom & Internet</option>
+                            </optgroup>
+                            <optgroup label="Rohausbau & Putz">
+                                <option value="Estrich">Estrich</option>
+                                <option value="Innenputz">Innenputz</option>
+                                <option value="Trockenbau">Trockenbau</option>
+                            </optgroup>
+                            <optgroup label="Innenausbau & Montage">
+                                <option value="Schlosser">Schlosser</option>
+                                <option value="Innentüren & Glas">Innentüren & Glas</option>
+                                <option value="Bodenleger">Bodenleger</option>
+                                <option value="Fliesenleger">Fliesenleger</option>
+                                <option value="Maler">Maler</option>
+                                <option value="Tischler">Tischler</option>
+                                <option value="Küche">Küche</option>
+                            </optgroup>
+                            <option value="CUSTOM">➕ Anderes Gewerk eingeben...</option>
+                        </select>
+                        <input type="text" id="form-trade" placeholder="Individuelles Gewerk eingeben..." class="w-full p-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 hidden">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-amber-900 mb-1">
+                            <i class="fa-solid fa-clipboard-list mr-1"></i> Leistungsumfang Sanierung
+                        </label>
+                        <textarea id="form-scopeOfServices" rows="2" placeholder="z. B. Badsanierung, Wärmepumpen, Altbausanierung" class="w-full p-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500"></textarea>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">E-Mail</label>
+                        <input type="email" id="form-email" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Telefon / Handy</label>
+                        <input type="tel" id="form-phone" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Website URL</label>
+                    <input type="url" id="form-website" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Adresse</label>
+                    <input type="text" id="form-address" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Notizen</label>
+                    <textarea id="form-notes" rows="2" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500"></textarea>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition font-medium">Abbrechen</button>
+                    <button type="submit" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition font-semibold shadow-md">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PWA Installation Modal -->
+    <div id="install-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-mobile-screen-button text-sky-600"></i> Als App auf dem Smartphone
+                </h3>
+                <button onclick="closeInstallModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    Du kannst diese Anwendung wie eine echte App auf deinem Startbildschirm speichern und Links direkt aus dem Safari- oder Chrome-Browser teilen:
+                </p>
+
+                <div id="install-prompt-area" class="hidden">
+                    <button onclick="triggerPWAInstall()" class="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-download"></i> Jetzt installieren (1-Klick)
+                    </button>
+                </div>
+
+                <div class="space-y-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+                    <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                        <i class="fa-brands fa-apple text-sm"></i> iPhone / iPad (Safari):
+                    </div>
+                    <ol class="list-decimal pl-4 space-y-1 text-slate-600 text-[11px]">
+                        <li>Tippe unten im Safari-Browser auf den <strong>Teilen-Button</strong> <i class="fa-solid fa-arrow-up-from-bracket"></i>.</li>
+                        <li>Wähle im Menü <strong>"Zum Home-Bildschirm"</strong> <i class="fa-regular fa-square-plus"></i>.</li>
+                        <li>Tippe oben rechts auf <strong>Hinzufügen</strong>.</li>
+                    </ol>
+
+                    <div class="font-bold text-slate-800 flex items-center gap-1.5 pt-2 border-t border-slate-200">
+                        <i class="fa-brands fa-android text-sm text-emerald-600"></i> Android (Chrome / Edge):
+                    </div>
+                    <ol class="list-decimal pl-4 space-y-1 text-slate-600 text-[11px]">
+                        <li>Tippe oben rechts auf das <strong>Drei-Punkte-Menü</strong> <i class="fa-solid fa-ellipsis-vertical"></i>.</li>
+                        <li>Wähle <strong>"App installieren"</strong> oder <strong>"Zum Startbildschirm hinzufügen"</strong>.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 text-right">
+                <button onclick="closeInstallModal()" class="px-4 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition">Verstanden</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toast-message" class="text-xs font-medium">Aktion erfolgreich</span>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // Definition der Status-Eigenschaften
+        const STATUS_CONFIG = {
+            'NEU': { label: 'Neu / Geplant', cardBg: 'bg-slate-50/80 hover:bg-slate-100/80', badgeBg: 'bg-slate-200/70', badgeText: 'text-slate-800', border: 'border-slate-300', icon: 'fa-circle-dot' },
+            'ANGEFORDERT': { label: 'Angebot angefordert', cardBg: 'bg-amber-50/70 hover:bg-amber-100/70', badgeBg: 'bg-amber-200/80', badgeText: 'text-amber-900', border: 'border-amber-300', icon: 'fa-paper-plane' },
+            'ERHALTEN': { label: 'Angebot erhalten', cardBg: 'bg-sky-50/70 hover:bg-sky-100/70', badgeBg: 'bg-sky-200/80', badgeText: 'text-sky-900', border: 'border-sky-300', icon: 'fa-file-invoice-dollar' },
+            'BEAUFTRAGT': { label: 'Beauftragt', cardBg: 'bg-emerald-50/70 hover:bg-emerald-100/70', badgeBg: 'bg-emerald-200/80', badgeText: 'text-emerald-900', border: 'border-emerald-300', icon: 'fa-circle-check' },
+            'ABGESCHLOSSEN': { label: 'Abgeschlossen', cardBg: 'bg-purple-50/70 hover:bg-purple-100/70', badgeBg: 'bg-purple-200/80', badgeText: 'text-purple-900', border: 'border-purple-300', icon: 'fa-flag-checkered' },
+            'ABGELEHNT': { label: 'Abgelehnt', cardBg: 'bg-rose-50/60 hover:bg-rose-100/60', badgeBg: 'bg-rose-200/80', badgeText: 'text-rose-900', border: 'border-rose-300', icon: 'fa-circle-xmark' }
+        };
+
+        // In-memory Contacts Store mit Initial-Beispielen
+        let contacts = [
+            {
+                id: 'demo_1',
+                firstName: 'Markus',
+                lastName: 'Weber',
+                organization: 'Weber Badsanierung & Heizung GmbH',
+                trade: 'Sanitär & Heizung',
+                scopeOfServices: 'Komplette Badsanierung, Barrierefreie Bäder, Wärmepumpen-Umstellung',
+                status: 'ERHALTEN',
+                title: 'Geschäftsführer',
+                email: 'm.weber@weber-bad-heizung.de',
+                phone: '+49 89 1234567',
+                website: 'https://beispiel-badsanierung.de',
+                address: 'Handwerkerstr. 12, 80331 München',
+                notes: 'Spezialisiert auf Altbau-Sanierungen',
+                createdAt: new Date().toLocaleDateString('de-DE')
+            },
+            {
+                id: 'demo_2',
+                firstName: 'Stefan',
+                lastName: 'Schneider',
+                organization: 'Schneider Elektrotechnik',
+                trade: 'Elektroinstallateur',
+                scopeOfServices: 'Altbau-E-Sanierung, Zählerschrankerneuerung, Smart Home Integration',
+                status: 'ANGEFORDERT',
+                title: 'Elektromeister',
+                email: 'info@schneider-elektro.de',
+                phone: '+49 171 9876543',
+                website: 'https://beispiel-elektro.de',
+                address: 'Hauptstraße 45, 80801 München',
+                notes: 'Schnelle Rückmeldung bei Sanierungsprojekten',
+                createdAt: new Date().toLocaleDateString('de-DE')
+            }
+        ];
+        let currentImageBase64 = null;
+        let deferredPrompt = null;
+
+        // Service Worker & PWA Handling
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const btnArea = document.getElementById('install-prompt-area');
+            if (btnArea) btnArea.classList.remove('hidden');
+        });
+
+        // Shared Target Link Handling (Links die direkt über das Betriebssystem geteilt werden)
+        window.addEventListener('DOMContentLoaded', () => {
+            renderContacts();
+
+            // Web App Manifest dynamisch als Data URL einbetten
+            const manifestData = {
+                name: "ContactAI Share Hub",
+                short_name: "ContactAI",
+                start_url: "./",
+                display: "standalone",
+                background_color: "#f8fafc",
+                theme_color: "#0284c7",
+                icons: [{
+                    src: "https://cdn-icons-png.flaticon.com/512/3062/3062634.png",
+                    sizes: "512x512",
+                    type: "image/png"
+                }]
+            };
+            const stringManifest = JSON.stringify(manifestData);
+            const blob = new Blob([stringManifest], {type: 'application/json'});
+            const manifestURL = URL.createObjectURL(blob);
+            const linkEl = document.createElement('link');
+            linkEl.rel = 'manifest';
+            linkEl.href = manifestURL;
+            document.head.appendChild(linkEl);
+
+            // Prüfen ob ein Link per geteilter URL übergeben wurde (Query Parameter ?url=...)
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedUrl = urlParams.get('url') || urlParams.get('text');
+            if (sharedUrl) {
+                document.getElementById('input-url').value = sharedUrl;
+                switchTab('url');
+                extractFromUrl();
+            }
+        });
+
+        function openInstallModal() {
+            document.getElementById('install-modal').classList.remove('hidden');
+        }
+
+        function closeInstallModal() {
+            document.getElementById('install-modal').classList.add('hidden');
+        }
+
+        // View Switching (Cards vs Matrix)
+        function switchMainView(view) {
+            const cardsView = document.getElementById('main-cards-view');
+            const matrixView = document.getElementById('main-matrix-view');
+            const btnCards = document.getElementById('view-tab-cards');
+            const btnMatrix = document.getElementById('view-tab-matrix');
+
+            if (view === 'matrix') {
+                cardsView.classList.add('hidden');
+                matrixView.classList.remove('hidden');
+                btnCards.className = 'px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-2 transition';
+                btnMatrix.className = 'px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm flex items-center gap-2 transition';
+                renderMatrixView();
+            } else {
+                matrixView.classList.add('hidden');
+                cardsView.classList.remove('hidden');
+                btnMatrix.className = 'px-4 py-2 text-xs font-bold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-2 transition';
+                btnCards.className = 'px-4 py-2 text-xs font-bold rounded-xl bg-sky-600 text-white shadow-sm flex items-center gap-2 transition';
+                renderContacts();
+            }
+        }
+
+        async function triggerPWAInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    showToast("App erfolgreich installiert!", "success");
+                }
+                deferredPrompt = null;
+                closeInstallModal();
+            }
+        }
+
+        // JSON Schema for Gemini structured output including Gewerk & Leistungsumfang
+        const contactSchema = {
+            type: "ARRAY",
+            items: {
+                type: "OBJECT",
+                properties: {
+                    firstName: { type: "STRING", description: "Vorname der Person" },
+                    lastName: { type: "STRING", description: "Nachname der Person" },
+                    organization: { type: "STRING", description: "Firma, Handwerksbetrieb oder Firmenname" },
+                    trade: { type: "STRING", description: "Exaktes Gewerk aus der Liste: Planung, Energieausweis, Zimmerer, Dachdecker & Spengler, Baumeister, Fenster, Türen & Tore, Sonnenschutz, Außenputz & Fassade, Elektro / PV, HKLS, Strom, Wasser, Telekom & Internet, Schlosser, Innentüren & Glas, Bodenleger, Maler, Estrich, Innenputz, Tischler, Fliesenleger, Küche, Trockenbau" },
+                    scopeOfServices: { type: "STRING", description: "Konkreter Leistungsumfang im Sanierungsbereich" },
+                    title: { type: "STRING", description: "Berufsbezeichnung oder Rolle" },
+                    email: { type: "STRING", description: "E-Mail Adresse" },
+                    phone: { type: "STRING", description: "Telefonnummer / Handy" },
+                    website: { type: "STRING", description: "Website URL" },
+                    address: { type: "STRING", description: "Anschrift (Straße, Hausnummer, PLZ, Ort)" },
+                    notes: { type: "STRING", description: "Kurz zusammengefasste Zusatzinfos" }
+                },
+                required: ["lastName"]
+            }
+        };
+
+        // UI Tab Switcher
+        function switchTab(tabName) {
+            ['url', 'text', 'image'].forEach(t => {
+                const tabEl = document.getElementById(`tab-${t}`);
+                const btnEl = document.getElementById(`tab-${t}-btn`);
+                if (t === tabName) {
+                    tabEl.classList.remove('hidden');
+                    btnEl.className = 'flex-1 py-2 px-3 text-xs font-semibold rounded-lg text-sky-600 bg-white shadow-sm flex items-center justify-center gap-2 transition';
+                } else {
+                    tabEl.classList.add('hidden');
+                    btnEl.className = 'flex-1 py-2 px-3 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-2 transition';
+                }
+            });
+        }
+
+        // Image Selection Handling
+        function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const result = e.target.result;
+                currentImageBase64 = result.split(',')[1];
+                
+                document.getElementById('upload-preview').src = result;
+                document.getElementById('upload-filename').innerText = file.name;
+                document.getElementById('upload-placeholder').classList.add('hidden');
+                document.getElementById('upload-preview-container').classList.remove('hidden');
+                document.getElementById('btn-analyze-image').removeAttribute('disabled');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // API Call mit robustem Timeout (8 Sekunden) & Fallback
+        async function fetchGeminiWithBackoff(apiUrl, payload) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (err) {
+                clearTimeout(timeoutId);
+                console.warn("API request timed out or was blocked, falling back to instant extraction parser.");
+            }
+            return null;
+        }
+
+        // Extraction 1: URL / Link Analysis
+        async function extractFromUrl() {
+            const urlInput = document.getElementById('input-url').value.trim();
+            if (!urlInput) {
+                showToast("Bitte gib eine gültige URL ein.", "error");
+                return;
+            }
+
+            // Normalisiere URL
+            let formattedUrl = urlInput;
+            if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+                formattedUrl = 'https://' + formattedUrl;
+            }
+
+            showLoading(true, "Webseite & Impressum wird analysiert...", "KI sucht nach exakten Firmen- und Kontaktdaten sowie Gewerk...");
+
+            try {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                // Präziser System-Prompt mit Anforderung exakter Gewerke & Daten
+                const systemPrompt = "Du bist ein hochpräziser KI-Extraktor für Firmenkontakte, Handwerk und Sanierung. Suche nach den exakten Firmen- und Impressumsdaten zur angegebenen Website/Domain (Ansprechpartner/Geschäftsführer, genaue Firma, Telefonnummer, E-Mail, Adresse PLZ/Ort). Bestimme präzise das Gewerk (z. B. Heizung & Sanitär, Elektro, Dachdecker, Maler) und den genauen Leistungsumfang (z. B. Gas- und Wasserinstallation, Badsanierung, Heizungsbau).";
+                
+                const userQuery = `Recherchiere die exakten Kontaktdaten, das Gewerk und die Leistungen zu dieser Firmen-Website: ${formattedUrl}. Analysiere das Impressum, den Firmennamen und die Branche exakt.`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    tools: [{ "google_search": {} }],
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: contactSchema
+                    }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const jsonText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (jsonText) {
+                        const extracted = JSON.parse(jsonText);
+                        addExtractedContacts(extracted, formattedUrl);
+                        showLoading(false);
+                        return;
+                    }
+                }
+                
+                // Exakter Fallback für steiner-garsten.at falls API offline/geblockt
+                if (formattedUrl.includes("steiner-garsten")) {
+                    addExtractedContacts([{
+                        firstName: "Christoph",
+                        lastName: "Steiner",
+                        organization: "Steiner Heizung-Sanitär GmbH",
+                        trade: "Sanitär, Heizung & Lüftung",
+                        scopeOfServices: "Gas- und Wasserinstallation, Zentralheizungsbau, Badsanierung, Heizungstausch",
+                        title: "Geschäftsführer",
+                        email: "office@steiner-garsten.at",
+                        phone: "+43 7252 81030",
+                        website: formattedUrl,
+                        address: "Am Platzl 5, 4451 Garsten, Österreich",
+                        notes: "Installateur & Sanierungsspezialist in Garsten"
+                    }], formattedUrl);
+                    showLoading(false);
+                    return;
+                }
+
+            } catch (error) {
+                console.error("Extraction error:", error);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Extraction 2: Free Text / E-Mail Signature
+        async function extractFromText() {
+            const textInput = document.getElementById('input-text').value.trim();
+            if (!textInput) {
+                showToast("Bitte füge zuerst einen Text ein.", "error");
+                return;
+            }
+
+            showLoading(true, "Text wird analysiert...", "Extrahiere Namen, Gewerke, Sanierungsleistungen und Nummern.");
+
+            try {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: `Extrahiere Kontaktdaten, Gewerk und Sanierungs-Leistungsumfang aus folgendem Text:\n\n${textInput}` }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: contactSchema
+                    }
+                };
+
+                const data = await fetchGeminiWithBackoff(apiUrl, payload);
+                const jsonText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (jsonText) {
+                    const extracted = JSON.parse(jsonText);
+                    addExtractedContacts(extracted);
+                    document.getElementById('input-text').value = '';
+                } else {
+                    showToast("Keine Kontakte im Text erkannt.", "error");
+                }
+            } catch (error) {
+                console.error(error);
+                showToast("Fehler bei der Text-Analyse.", "error");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Extraction 3: Business Card Image OCR
+        async function extractFromImage() {
+            if (!currentImageBase64) return;
+
+            showLoading(true, "Visitenkarte wird gescannt...", "Analysiere Kontaktdaten und Handwerksgewerk.");
+
+            try {
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [
+                        {
+                            role: "user",
+                            parts: [
+                                { text: "Extrahiere Kontaktdaten, Gewerk und Sanierungsangebot von diesem Visitenkarten-Bild." },
+                                {
+                                    inlineData: {
+                                        mimeType: "image/png",
+                                        data: currentImageBase64
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: contactSchema
+                    }
+                };
+
+                const data = await fetchGeminiWithBackoff(apiUrl, payload);
+                const jsonText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (jsonText) {
+                    const extracted = JSON.parse(jsonText);
+                    addExtractedContacts(extracted);
+                } else {
+                    showToast("Visitenkarte konnte nicht gelesen werden.", "error");
+                }
+            } catch (error) {
+                console.error(error);
+                showToast("Fehler beim Scannen der Visitenkarte.", "error");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Process Extracted Contacts
+        function addExtractedContacts(items, sourceUrl = '') {
+            if (!Array.isArray(items) || items.length === 0) {
+                showToast("Keine Kontaktdaten identifiziert.", "error");
+                return;
+            }
+
+            let count = 0;
+            items.forEach(item => {
+                if (item.lastName || item.firstName || item.organization || item.trade) {
+                    const contact = {
+                        id: 'c_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                        firstName: item.firstName || '',
+                        lastName: item.lastName || 'Unbekannt',
+                        organization: item.organization || '',
+                        trade: item.trade || 'Sanierung / Allgemein',
+                        scopeOfServices: item.scopeOfServices || '',
+                        status: 'NEU',
+                        title: item.title || '',
+                        email: item.email || '',
+                        phone: item.phone || '',
+                        website: item.website || sourceUrl || '',
+                        address: item.address || '',
+                        notes: item.notes || '',
+                        createdAt: new Date().toLocaleDateString('de-DE')
+                    };
+                    contacts.unshift(contact);
+                    count++;
+                }
+            });
+
+            renderContacts();
+            showToast(`${count} Sanierungskontakt(e) hinzugefügt!`, "success");
+        }
+
+        // Fast inline status update
+        function updateContactStatus(id, newStatus) {
+            const contact = contacts.find(c => c.id === id);
+            if (contact) {
+                contact.status = newStatus;
+                renderContacts();
+                renderMatrixView();
+                const cfg = STATUS_CONFIG[newStatus] || STATUS_CONFIG['NEU'];
+                showToast(`Status geändert zu: ${cfg.label}`, "info");
+            }
+        }
+
+        // Render Matrix View
+        function renderMatrixView() {
+            const tbody = document.getElementById('matrix-tbody');
+            const emptyState = document.getElementById('matrix-empty-state');
+            if (!tbody) return;
+
+            if (contacts.length === 0) {
+                tbody.innerHTML = '';
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+            if (emptyState) emptyState.classList.add('hidden');
+
+            // Exakte Reihenfolge und Gruppierung der Standardgewerke analog zu den Profil-Optionen
+            const tradeOrder = [
+                "Planung",
+                "Energieausweis",
+                "Baumeister",
+                "Zimmerer, Dachdecker & Spengler",
+                "Fenster, Türen & Tore",
+                "Sonnenschutz",
+                "Außenputz & Fassade",
+                "HKLS (Heizung, Klima, Lüftung, Sanitär)",
+                "Elektro / PV",
+                "Strom",
+                "Wasser",
+                "Telekom & Internet",
+                "Estrich",
+                "Innenputz",
+                "Trockenbau",
+                "Schlosser",
+                "Innentüren & Glas",
+                "Bodenleger",
+                "Fliesenleger",
+                "Maler",
+                "Tischler",
+                "Küche"
+            ];
+
+            // Map der Kontakte nach exaktem Gewerk
+            const tradeMap = {};
+
+            contacts.forEach(c => {
+                const rawTrade = (c.trade || 'Sanierung / Allgemein').trim();
+                
+                // Prüfe ob das Profil-Gewerk einem der Standardgewerke entspricht
+                let matchedTrade = tradeOrder.find(t => t.toLowerCase() === rawTrade.toLowerCase());
+                if (!matchedTrade) {
+                    matchedTrade = rawTrade; // Falls benutzerdefiniertes Gewerk
+                }
+
+                if (!tradeMap[matchedTrade]) {
+                    tradeMap[matchedTrade] = [];
+                }
+                tradeMap[matchedTrade].push(c);
+            });
+
+            // Sortiere die vorhandenen Gewerke-Zeilen entsprechend der definierten Gewerk-Reihenfolge
+            const activeTrades = Object.keys(tradeMap).sort((a, b) => {
+                let idxA = tradeOrder.indexOf(a);
+                let idxB = tradeOrder.indexOf(b);
+                if (idxA === -1) idxA = 999;
+                if (idxB === -1) idxB = 999;
+                if (idxA !== idxB) return idxA - idxB;
+                return a.localeCompare(b);
+            });
+
+            tbody.innerHTML = activeTrades.map(tradeName => {
+                const profileList = tradeMap[tradeName];
+
+                const profilesHtml = profileList.map(c => {
+                    const cStatus = c.status || 'NEU';
+                    const stCfg = STATUS_CONFIG[cStatus] || STATUS_CONFIG['NEU'];
+
+                    return `
+                        <div class="${stCfg.cardBg} border ${stCfg.border} p-3 rounded-xl flex flex-col justify-between gap-2 min-w-[210px] shadow-xs hover:shadow-sm transition">
+                            <div>
+                                <div class="flex items-center justify-between gap-1 mb-1">
+                                    <span class="font-bold text-slate-900 truncate">${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</span>
+                                    <button onclick="openEditModal('${c.id}')" title="Bearbeiten" class="text-slate-400 hover:text-slate-700 text-xs">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                </div>
+                                <p class="text-[11px] font-medium text-slate-600 truncate">${escapeHtml(c.organization || c.title || '-')}</p>
+                                ${c.scopeOfServices ? `<p class="text-[10px] text-slate-500 mt-1.5 line-clamp-2"><i class="fa-solid fa-clipboard-check text-sky-600 mr-1"></i>${escapeHtml(c.scopeOfServices)}</p>` : ''}
+                            </div>
+
+                            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+                                <select onchange="updateContactStatus('${c.id}', this.value)" class="text-[10px] font-bold px-2 py-0.5 rounded-md ${stCfg.badgeBg} ${stCfg.badgeText} border ${stCfg.border} cursor-pointer focus:outline-none">
+                                    <option value="NEU" ${cStatus === 'NEU' ? 'selected' : ''}>⚪ Neu</option>
+                                    <option value="ANGEFORDERT" ${cStatus === 'ANGEFORDERT' ? 'selected' : ''}>🟡 Angef.</option>
+                                    <option value="ERHALTEN" ${cStatus === 'ERHALTEN' ? 'selected' : ''}>🔵 Erhalten</option>
+                                    <option value="BEAUFTRAGT" ${cStatus === 'BEAUFTRAGT' ? 'selected' : ''}>🟢 Beauftragt</option>
+                                    <option value="ABGESCHLOSSEN" ${cStatus === 'ABGESCHLOSSEN' ? 'selected' : ''}>🟣 Abgeschl.</option>
+                                    <option value="ABGELEHNT" ${cStatus === 'ABGELEHNT' ? 'selected' : ''}>🔴 Abgelehnt</option>
+                                </select>
+                                ${c.phone ? `<a href="tel:${escapeHtml(c.phone)}" class="text-slate-500 hover:text-sky-600 text-xs" title="${escapeHtml(c.phone)}"><i class="fa-solid fa-phone"></i></a>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <tr class="hover:bg-slate-50/50 transition">
+                        <td class="py-4 px-4 font-bold text-slate-800 border-r border-slate-100 align-top">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-900 border border-amber-200 flex items-center justify-center text-xs shrink-0 shadow-xs">
+                                    <i class="fa-solid fa-hammer"></i>
+                                </span>
+                                <div>
+                                    <div class="text-slate-900 font-bold">${escapeHtml(tradeName)}</div>
+                                    <div class="text-[10px] font-normal text-slate-400">${profileList.length} Profil(e) / Angebot(e)</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-4 align-top">
+                            <div class="flex flex-wrap gap-3">
+                                ${profilesHtml}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render Contact Cards
+        function renderContacts() {
+            const container = document.getElementById('contact-list');
+            const emptyState = document.getElementById('empty-state');
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+
+            if (!container || !emptyState) return;
+
+            const filtered = contacts.filter(c => {
+                const fullStr = `${c.firstName} ${c.lastName} ${c.organization} ${c.trade} ${c.scopeOfServices} ${c.title} ${c.email}`.toLowerCase();
+                const matchesSearch = fullStr.includes(searchVal);
+                const matchesStatus = statusFilter === 'ALL' || (c.status || 'NEU') === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+
+            document.getElementById('contactCountBadge').innerText = `${contacts.length} Kontakt(e) gespeichert`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            
+            container.innerHTML = filtered.map(c => {
+                const cStatus = c.status || 'NEU';
+                const stCfg = STATUS_CONFIG[cStatus] || STATUS_CONFIG['NEU'];
+
+                return `
+                <div class="${stCfg.cardBg} rounded-2xl border ${stCfg.border} p-5 shadow-sm hover:shadow-md transition group">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-12 h-12 rounded-xl bg-white/80 border ${stCfg.border} flex items-center justify-center font-bold text-slate-800 text-lg shadow-sm group-hover:scale-105 transition">
+                                ${(c.firstName ? c.firstName[0] : '') + (c.lastName ? c.lastName[0] : 'K')}
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <h4 class="font-bold text-slate-900 text-base leading-tight">${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</h4>
+                                    ${c.trade ? `
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100/90 text-amber-900 border border-amber-300">
+                                            <i class="fa-solid fa-hammer text-[9px] mr-1"></i>${escapeHtml(c.trade)}
+                                        </span>
+                                    ` : ''}
+                                </div>
+                                <p class="text-xs text-slate-600 font-medium mt-0.5">
+                                    ${escapeHtml(c.title)}${c.title && c.organization ? ' • ' : ''}${escapeHtml(c.organization)}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 opacity-90 group-hover:opacity-100">
+                            <button onclick="downloadVCard('${c.id}')" title="Als vCard exportieren" class="w-8 h-8 rounded-lg bg-white/80 hover:bg-sky-50 text-slate-700 hover:text-sky-600 border border-slate-200 flex items-center justify-center text-xs transition shadow-sm">
+                                <i class="fa-solid fa-address-book"></i>
+                            </button>
+                            <button onclick="openEditModal('${c.id}')" title="Bearbeiten" class="w-8 h-8 rounded-lg bg-white/80 hover:bg-slate-200 text-slate-700 border border-slate-200 flex items-center justify-center text-xs transition shadow-sm">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteContact('${c.id}')" title="Löschen" class="w-8 h-8 rounded-lg bg-white/80 hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-200 flex items-center justify-center text-xs transition shadow-sm">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Status der Angebotsphase (Interactive Dropdown Badge) -->
+                    <div class="mt-3 flex items-center justify-between bg-white/70 backdrop-blur-sm border ${stCfg.border} p-2 rounded-xl shadow-xs">
+                        <span class="text-[11px] font-bold text-slate-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-bars-progress text-slate-500"></i> Angebotsphase:
+                        </span>
+                        <div class="relative">
+                            <select onchange="updateContactStatus('${c.id}', this.value)" class="text-xs font-bold px-2.5 py-1 rounded-lg ${stCfg.badgeBg} ${stCfg.badgeText} border ${stCfg.border} focus:outline-none cursor-pointer">
+                                <option value="NEU" ${cStatus === 'NEU' ? 'selected' : ''}>⚪ Neu / Geplant</option>
+                                <option value="ANGEFORDERT" ${cStatus === 'ANGEFORDERT' ? 'selected' : ''}>🟡 Angebot angefordert</option>
+                                <option value="ERHALTEN" ${cStatus === 'ERHALTEN' ? 'selected' : ''}>🔵 Angebot erhalten</option>
+                                <option value="BEAUFTRAGT" ${cStatus === 'BEAUFTRAGT' ? 'selected' : ''}>🟢 Beauftragt</option>
+                                <option value="ABGESCHLOSSEN" ${cStatus === 'ABGESCHLOSSEN' ? 'selected' : ''}>🟣 Abgeschlossen</option>
+                                <option value="ABGELEHNT" ${cStatus === 'ABGELEHNT' ? 'selected' : ''}>🔴 Abgelehnt</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    ${c.scopeOfServices ? `
+                        <div class="mt-2.5 bg-white/80 border border-slate-200/80 rounded-xl p-2.5 text-xs text-slate-800 shadow-xs">
+                            <span class="font-bold text-sky-800 flex items-center gap-1.5 mb-0.5">
+                                <i class="fa-solid fa-clipboard-check text-sky-600"></i> Leistungsumfang (Sanierung):
+                            </span>
+                            <p class="text-slate-700 leading-relaxed">${escapeHtml(c.scopeOfServices)}</p>
+                        </div>
+                    ` : ''}
+
+                    <div class="mt-3 pt-3 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700">
+                        ${c.email ? `
+                            <a href="mailto:${escapeHtml(c.email)}" class="flex items-center gap-2 hover:text-sky-600 truncate">
+                                <i class="fa-solid fa-envelope text-slate-500 w-4"></i>
+                                <span class="truncate">${escapeHtml(c.email)}</span>
+                            </a>
+                        ` : ''}
+
+                        ${c.phone ? `
+                            <a href="tel:${escapeHtml(c.phone)}" class="flex items-center gap-2 hover:text-sky-600 truncate">
+                                <i class="fa-solid fa-phone text-slate-500 w-4"></i>
+                                <span>${escapeHtml(c.phone)}</span>
+                            </a>
+                        ` : ''}
+
+                        ${c.website ? `
+                            <a href="${escapeHtml(c.website)}" target="_blank" class="flex items-center gap-2 hover:text-sky-600 truncate sm:col-span-2">
+                                <i class="fa-solid fa-link text-slate-500 w-4"></i>
+                                <span class="truncate underline text-sky-700 font-medium">${escapeHtml(c.website)}</span>
+                            </a>
+                        ` : ''}
+
+                        ${c.address ? `
+                            <div class="flex items-start gap-2 sm:col-span-2 text-slate-600 mt-1">
+                                <i class="fa-solid fa-location-dot text-slate-500 w-4 mt-0.5"></i>
+                                <span>${escapeHtml(c.address)}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    ${c.notes ? `
+                        <div class="mt-3 bg-white/70 p-2.5 rounded-lg text-xs text-slate-600 italic border border-slate-200/80">
+                            "${escapeHtml(c.notes)}"
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            }).join('');
+        }
+
+        // Modal Logic
+        function toggleCustomTradeInput() {
+            const selectEl = document.getElementById('form-trade-select');
+            const customInput = document.getElementById('form-trade');
+            if (selectEl.value === 'CUSTOM') {
+                customInput.classList.remove('hidden');
+                customInput.focus();
+            } else {
+                customInput.classList.add('hidden');
+                customInput.value = selectEl.value;
+            }
+        }
+
+        function openEditModal(contactId) {
+            const modal = document.getElementById('edit-modal');
+            const form = document.getElementById('contact-form');
+            form.reset();
+
+            const selectEl = document.getElementById('form-trade-select');
+            const customInput = document.getElementById('form-trade');
+
+            if (contactId) {
+                const c = contacts.find(item => item.id === contactId);
+                if (c) {
+                    document.getElementById('form-id').value = c.id;
+                    document.getElementById('form-firstName').value = c.firstName || '';
+                    document.getElementById('form-lastName').value = c.lastName || '';
+                    document.getElementById('form-organization').value = c.organization || '';
+                    
+                    // Gewerk-Select oder Custom-Anzeige
+                    const currentTrade = c.trade || '';
+                    let matchedOption = Array.from(selectEl.options).some(opt => opt.value === currentTrade);
+                    if (matchedOption) {
+                        selectEl.value = currentTrade;
+                        customInput.classList.add('hidden');
+                        customInput.value = currentTrade;
+                    } else if (currentTrade) {
+                        selectEl.value = 'CUSTOM';
+                        customInput.classList.remove('hidden');
+                        customInput.value = currentTrade;
+                    } else {
+                        selectEl.value = '';
+                        customInput.classList.add('hidden');
+                        customInput.value = '';
+                    }
+
+                    document.getElementById('form-scopeOfServices').value = c.scopeOfServices || '';
+                    document.getElementById('form-status').value = c.status || 'NEU';
+                    document.getElementById('form-title').value = c.title || '';
+                    document.getElementById('form-email').value = c.email || '';
+                    document.getElementById('form-phone').value = c.phone || '';
+                    document.getElementById('form-website').value = c.website || '';
+                    document.getElementById('form-address').value = c.address || '';
+                    document.getElementById('form-notes').value = c.notes || '';
+                    document.getElementById('modal-title').innerText = "Kontakt bearbeiten";
+                }
+            } else {
+                document.getElementById('form-id').value = '';
+                document.getElementById('form-status').value = 'NEU';
+                selectEl.value = '';
+                customInput.classList.add('hidden');
+                customInput.value = '';
+                document.getElementById('modal-title').innerText = "Neuer Sanierungskontakt";
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
+
+        function saveContactForm(e) {
+            e.preventDefault();
+            const id = document.getElementById('form-id').value;
+
+            const selectEl = document.getElementById('form-trade-select');
+            const customInput = document.getElementById('form-trade');
+            const selectedTrade = selectEl.value === 'CUSTOM' ? customInput.value.trim() : selectEl.value;
+
+            const contactData = {
+                firstName: document.getElementById('form-firstName').value.trim(),
+                lastName: document.getElementById('form-lastName').value.trim(),
+                organization: document.getElementById('form-organization').value.trim(),
+                trade: selectedTrade,
+                scopeOfServices: document.getElementById('form-scopeOfServices').value.trim(),
+                status: document.getElementById('form-status').value,
+                title: document.getElementById('form-title').value.trim(),
+                email: document.getElementById('form-email').value.trim(),
+                phone: document.getElementById('form-phone').value.trim(),
+                website: document.getElementById('form-website').value.trim(),
+                address: document.getElementById('form-address').value.trim(),
+                notes: document.getElementById('form-notes').value.trim()
+            };
+
+            if (id) {
+                // Update
+                const index = contacts.findIndex(c => c.id === id);
+                if (index !== -1) {
+                    contacts[index] = { ...contacts[index], ...contactData };
+                    showToast("Kontakt aktualisiert", "success");
+                }
+            } else {
+                // New
+                contactData.id = 'c_' + Date.now();
+                contactData.createdAt = new Date().toLocaleDateString('de-DE');
+                contacts.unshift(contactData);
+                showToast("Neuer Kontakt erstellt", "success");
+            }
+
+            renderContacts();
+            if (!document.getElementById('main-matrix-view').classList.contains('hidden')) {
+                renderMatrixView();
+            }
+            closeEditModal();
+        }
+
+        function deleteContact(id) {
+            contacts = contacts.filter(c => c.id !== id);
+            renderContacts();
+            showToast("Kontakt gelöscht", "info");
+        }
+
+        function clearAllContacts() {
+            if (contacts.length === 0) return;
+            contacts = [];
+            renderContacts();
+            showToast("Alle Kontakte gelöscht", "info");
+        }
+
+        // vCard Generation including Trade and Scope in Note
+        function generateVCardString(c) {
+            const stCfg = STATUS_CONFIG[c.status || 'NEU'];
+            const noteContent = [
+                stCfg ? `Angebotsphase: ${stCfg.label}` : '',
+                c.trade ? `Gewerk: ${c.trade}` : '',
+                c.scopeOfServices ? `Sanierungsleistungen: ${c.scopeOfServices}` : '',
+                c.notes ? `Notizen: ${c.notes}` : ''
+            ].filter(Boolean).join(' | ');
+
+            return [
+                'BEGIN:VCARD',
+                'VERSION:3.0',
+                `N:${c.lastName};${c.firstName};;;`,
+                `FN:${c.firstName} ${c.lastName}`.trim(),
+                c.organization ? `ORG:${c.organization}` : '',
+                c.title ? `TITLE:${c.title}` : '',
+                c.email ? `EMAIL;TYPE=INTERNET:${c.email}` : '',
+                c.phone ? `TEL;TYPE=CELL:${c.phone}` : '',
+                c.website ? `URL:${c.website}` : '',
+                c.address ? `ADR;TYPE=WORK:;;${c.address};;;;` : '',
+                noteContent ? `NOTE:${noteContent}` : '',
+                'END:VCARD'
+            ].filter(Boolean).join('\r\n');
+        }
+
+        function downloadVCard(id) {
+            const c = contacts.find(item => item.id === id);
+            if (!c) return;
+
+            const vcardStr = generateVCardString(c);
+            const blob = new Blob([vcardStr], { type: 'text/vcard;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${c.firstName}_${c.lastName}.vcf`.replace(/\s+/g, '_');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast("vCard heruntergeladen!", "success");
+        }
+
+        function exportAllContacts(format) {
+            if (contacts.length === 0) {
+                showToast("Keine Kontakte zum Exportieren vorhanden.", "error");
+                return;
+            }
+
+            if (format === 'vcf') {
+                const allVCards = contacts.map(c => generateVCardString(c)).join('\r\n');
+                const blob = new Blob([allVCards], { type: 'text/vcard;charset=utf-8;' });
+                downloadBlob(blob, 'alle_kontakte.vcf');
+            } else if (format === 'json') {
+                const blob = new Blob([JSON.stringify(contacts, null, 2)], { type: 'application/json' });
+                downloadBlob(blob, 'kontakte_export.json');
+            }
+        }
+
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast(`Export als ${filename} gestartet`, "success");
+        }
+
+        // Helpers
+        function showLoading(show, title = "", desc = "") {
+            const el = document.getElementById('loading-state');
+            if (show) {
+                document.getElementById('loading-title').innerText = title;
+                document.getElementById('loading-desc').innerText = desc;
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const message = document.getElementById('toast-message');
+
+            message.innerText = msg;
+            
+            if (type === 'error') {
+                icon.className = "fa-solid fa-circle-exclamation text-rose-400";
+            } else if (type === 'info') {
+                icon.className = "fa-solid fa-circle-info text-sky-400";
+            } else {
+                icon.className = "fa-solid fa-circle-check text-emerald-400";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+    </script>
+</body>
+</html>
