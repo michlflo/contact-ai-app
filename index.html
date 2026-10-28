@@ -802,7 +802,7 @@
                 const response = await fetch('/api/gemini', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model: 'gemini-2.0-flash-exp', payload })
+                    body: JSON.stringify({ model: 'gemini-3.8-flash', payload })
                 });
 
                 if (response.ok) {
@@ -861,7 +861,7 @@
                     }
                 };
 
-                const data = await fetchGeminiWithBackoff('/api/gemini', { model: 'gemini-2.0-flash-exp', payload });
+                const data = await fetchGeminiWithBackoff('/api/gemini', { model: 'gemini-3.8-flash', payload });
                 const jsonText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (jsonText) {
@@ -907,7 +907,7 @@
                     }
                 };
 
-                const data = await fetchGeminiWithBackoff('/api/gemini', { model: 'gemini-2.0-flash-exp', payload });
+                const data = await fetchGeminiWithBackoff('/api/gemini', { model: 'gemini-3.8-flash', payload });
                 const jsonText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (jsonText) {
