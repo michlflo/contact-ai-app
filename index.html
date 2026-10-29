@@ -712,7 +712,7 @@
                     website: { type: "STRING", description: "Website URL" },
                     address: { type: "STRING", description: "Anschrift (Straße, Hausnummer, PLZ, Ort)" },
                     openingHours: { type: "STRING", description: "Öffnungszeiten im Format z. B. 'Mo-Do 07:00-12:00, 13:00-16:00; Fr 07:00-12:00'" },
-                    notes: { type: "STRING", description: "Kurz zusammengefasste Zusatzinfos (ohne Öffnungszeiten)" }
+                    notes: { type: "STRING", description: "Prägnante Zusammenfassung der Website in 1–2 Sätzen mit Fokus auf Alleinstellungsmerkmale (USPs), Spezialisierung, Erfahrung und Qualitätsversprechen der Firma. KEINE Impressumsdaten wie Firmenbuchnummer, Firmengericht, UID oder Öffnungszeiten." }
                 },
                 required: ["lastName"]
             }
@@ -807,7 +807,7 @@
 
                 // Präziser System-Prompt mit Anforderung exakter Gewerke & Daten
                 const systemPrompt = "Du bist ein hochpräziser KI-Extraktor für Firmenkontakte, Handwerk und Sanierung. Suche nach den exakten Firmen- und Impressumsdaten zur angegebenen Website/Domain (Ansprechpartner/Geschäftsführer, genaue Firma, Telefonnummer, E-Mail, Adresse PLZ/Ort). Bestimme präzise das Gewerk (z. B. Heizung & Sanitär, Elektro, Dachdecker, Maler) und den genauen Leistungsumfang (z. B. Gas- und Wasserinstallation, Badsanierung, Heizungsbau).";
-                const userQuery = `Extrahiere aus dem folgenden Webseiten-Text (${formattedUrl}) GENAU EINEN Kontakt (den Geschäftsführer/Ansprechpartner laut Impressum). Fülle ALLE Felder aus, soweit im Text vorhanden: firstName, lastName, organization (vollständiger Firmenname inkl. Rechtsform), title, email, phone, address (Straße, PLZ, Ort), website, trade (nur ein Gewerk aus der Liste im Schema), scopeOfServices (kommagetrennte Leistungen, z. B. Dachstühle, Holzriegelbau, Carports), openingHours (Öffnungszeiten kompakt im Format 'Mo-Do 07:00-12:00, 13:00-16:00; Fr 07:00-12:00'), notes (weitere Infos wie Firmensitz, Firmenbuchnummer, UID – ohne Öffnungszeiten). Schreibe nur in das jeweils passende Feld, nicht alles in ein Feld. Nutze nur Informationen aus dem Text:\n\n${pageText}`;
+                const userQuery = `Extrahiere aus dem folgenden Webseiten-Text (${formattedUrl}) GENAU EINEN Kontakt (den Geschäftsführer/Ansprechpartner laut Impressum). Fülle ALLE Felder aus, soweit im Text vorhanden: firstName, lastName, organization (vollständiger Firmenname inkl. Rechtsform), title, email, phone, address (Straße, PLZ, Ort), website, trade (nur ein Gewerk aus der Liste im Schema), scopeOfServices (kommagetrennte Leistungen, z. B. Dachstühle, Holzriegelbau, Carports), openingHours (Öffnungszeiten kompakt im Format 'Mo-Do 07:00-12:00, 13:00-16:00; Fr 07:00-12:00'), notes (fasse die Inhalte der Website in 1–2 aussagekräftigen Sätzen zusammen: was macht die Firma besonders, was sind ihre Alleinstellungsmerkmale/USPs, Spezialisierungen oder Werte – schreibe hier KEINE Impressums-/Registerdaten wie Firmenbuchnummer, Firmengericht, UID, Firmensitz oder Öffnungszeiten hinein). Schreibe nur in das jeweils passende Feld, nicht alles in ein Feld. Nutze nur Informationen aus dem Text:\n\n${pageText}`;
 
                 const payload = {
                     contents: [{ parts: [{ text: userQuery }] }],
