@@ -138,20 +138,25 @@ export default async function handler(req, res) {
         }
     };
 
-    // Falls der Zielserver Cloud-/AWS-IPs (Vercel) blockiert (Timeout/Geo-Block), über öffentlichen Proxy-Fallback abrufen
-    const get = async (u, timeoutMs = 5000) => {
+    // Falls der Zielserver Cloud-/AWS-IPs (Vercel) blockiert (Geo-Block/Firewall), neuesten Snapshot aus dem Internet Archive (Wayback Machine) laden
+    const fetchWaybackHtml = async (u) => {
+        try {
+            const cdxUrl = `https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(u)}&output=json&filter=statuscode:200&limit=-1`;
+            const cr = await fetch(cdxUrl, { signal: AbortSignal.timeout(5000) });
+            if (!cr.ok) return '';
+            const rows = await cr.json();
+            if (!Array.isArray(rows) || !rows[1]) return '';
+            const [, timestamp, origUrl] = rows[1];
+            return await fetchRawHtml(`https://web.archive.org/web/${timestamp}id_/${origUrl}`, 6000);
+        } catch {
+            return '';
+        }
+    };
+
+    const get = async (u, timeoutMs = 4500) => {
         const direct = await fetchRawHtml(u, timeoutMs);
         if (direct) return direct;
-
-        const proxyUrls = [
-            `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-            `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
-        ];
-        for (const pu of proxyUrls) {
-            const viaProxy = await fetchRawHtml(pu, 6000);
-            if (viaProxy && viaProxy.length > 100) return viaProxy;
-        }
-        return '';
+        return await fetchWaybackHtml(u);
     };
 
     // Entdecke echte Impressums- und Kontakt-Links direkt aus dem HTML der Startseite
@@ -179,15 +184,22 @@ export default async function handler(req, res) {
     };
 
     // 1. Lade zuerst die eingegebene Seite selbst
-    const mainHtml = await get(target.href, 9000);
+    let mainHtml = await fetchRawHtml(target.href, 4500);
+    let blockedDirect = false;
+    if (!mainHtml) {
+        blockedDirect = true;
+        mainHtml = await fetchWaybackHtml(target.href);
+    }
 
     // 2. Ermittle die tatsächlichen URLs für Impressum und Kontakt (z. B. /content/de/impressum/)
     const impressumUrl = discoverSubpageUrl(mainHtml, target, /\b(impressum|imprint|offenlegung)\b/i, '/impressum');
     const kontaktUrl = discoverSubpageUrl(mainHtml, target, /\b(kontakt|service-kontakt|contact)\b/i, '/kontakt');
 
+    const loadSub = (u) => blockedDirect ? fetchWaybackHtml(u) : get(u, 4500);
+
     const [impressumHtml, kontaktHtml] = await Promise.all([
-        impressumUrl !== target.href ? get(impressumUrl, 6000) : Promise.resolve(''),
-        kontaktUrl !== target.href && kontaktUrl !== impressumUrl ? get(kontaktUrl, 6000) : Promise.resolve('')
+        impressumUrl !== target.href ? loadSub(impressumUrl) : Promise.resolve(''),
+        kontaktUrl !== target.href && kontaktUrl !== impressumUrl ? loadSub(kontaktUrl) : Promise.resolve('')
     ]);
 
     const sections = [
