@@ -85,7 +85,15 @@
     overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-family:inherit';
     overlay.innerHTML = `
         <form id="sb-login" style="background:#fff;padding:2rem;border-radius:1rem;box-shadow:0 10px 30px rgba(0,0,0,.1);width:min(92vw,360px);display:flex;flex-direction:column;gap:.75rem">
-            <h2 style="font-size:1.25rem;font-weight:700">Anmelden</h2>
+            <div style="display:flex;align-items:center;gap:.65rem;margin-bottom:.25rem">
+                <div style="width:2.4rem;height:2.4rem;border-radius:.7rem;background:linear-gradient(45deg,#0284c7,#4f46e5);display:flex;align-items:center;justify-content:center">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 3H14L19 8V19C19 20.1046 18.1046 21 17 21H7C5.89543 21 5 20.1046 5 19V5C5 3.89543 5.89543 3 7 3Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 3V8H19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 14L11 16.5L15.5 11.5" stroke="#7dd3fc" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div>
+                    <div style="font-size:1.1rem;font-weight:700;color:#0f172a;line-height:1.2">Angebots Manager</div>
+                    <div style="font-size:.75rem;color:#64748b">Anmelden</div>
+                </div>
+            </div>
             <input id="sb-email" type="email" required placeholder="E-Mail" autocomplete="email" style="border:1px solid #cbd5e1;border-radius:.5rem;padding:.6rem">
             <input id="sb-pass" type="password" required minlength="6" placeholder="Passwort" autocomplete="current-password" style="border:1px solid #cbd5e1;border-radius:.5rem;padding:.6rem">
             <button type="submit" style="background:#0f172a;color:#fff;border-radius:.5rem;padding:.6rem;font-weight:600">Anmelden</button>
