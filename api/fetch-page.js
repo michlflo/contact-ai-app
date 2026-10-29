@@ -83,15 +83,26 @@ export default async function handler(req, res) {
         const impressumIdx = body.search(/\b(Medieninhaber|Für den Inhalt verantwortlich|Informationspflicht|Unternehmensgegenstand|Geschäftsführer|Inhaber)\b/i);
         let relevantBody = body;
         if (impressumIdx > 400) {
-            relevantBody = body.slice(Math.max(0, impressumIdx - 200));
+            const fromImpressum = body.slice(Math.max(0, impressumIdx - 200));
+            if (fromImpressum.length <= maxLen) {
+                relevantBody = fromImpressum;
+            } else {
+                const headPart = Math.floor(maxLen * 0.65);
+                const tailPart = maxLen - headPart;
+                relevantBody = fromImpressum.slice(0, headPart) + ' ... ' + fromImpressum.slice(fromImpressum.length - tailPart);
+            }
         } else if (body.length > maxLen) {
-            // Nimm Anfang, Mitte und Ende (Footer enthält oft Adresse/Tel/Öffnungszeiten)
+            // Nimm Anfang und Ende (Footer enthält oft Adresse/Tel/Öffnungszeiten)
             const half = Math.floor(maxLen * 0.65);
             const tail = maxLen - half;
             relevantBody = body.slice(0, half) + ' ... ' + body.slice(body.length - tail);
         }
 
-        return [metaHeader, relevantBody.slice(0, maxLen)].filter(Boolean).join('\n');
+        // Öffnungszeiten-Block im gesamten Seitentext gezielt aufspüren, falls er sonst abgeschnitten würde
+        const ohMatch = body.match(/.{0,40}\b(?:Öffnungszeiten|Oeffnungszeiten|Bürozeiten|Geschäftszeiten)\b[\s\S]{0,220}/i);
+        const ohSnippet = ohMatch ? 'Gefundene Öffnungszeiten im Text: ' + ohMatch[0].replace(/\s+/g, ' ').trim() : '';
+
+        return [metaHeader, ohSnippet, relevantBody.slice(0, maxLen)].filter(Boolean).join('\n');
     };
 
     const get = async (u) => {
