@@ -1063,8 +1063,25 @@
                 return a.localeCompare(b);
             });
 
+            // Status-Sortierung: links am weitesten fortgeschritten, Abgelehnt immer ganz rechts
+            const statusPriority = {
+                'ABGESCHLOSSEN': 1,
+                'BEAUFTRAGT': 2,
+                'ERHALTEN': 3,
+                'ANGEFORDERT': 4,
+                'NEU': 5,
+                'ABGELEHNT': 6
+            };
+
             tbody.innerHTML = activeTrades.map(tradeName => {
-                const profileList = tradeMap[tradeName];
+                const profileList = [...tradeMap[tradeName]].sort((a, b) => {
+                    const prioA = statusPriority[a.status || 'NEU'] || 5;
+                    const prioB = statusPriority[b.status || 'NEU'] || 5;
+                    if (prioA !== prioB) return prioA - prioB;
+                    const nameA = (a.organization || a.lastName || '').toLowerCase();
+                    const nameB = (b.organization || b.lastName || '').toLowerCase();
+                    return nameA.localeCompare(nameB);
+                });
 
                 const profilesHtml = profileList.map(c => {
                     const cStatus = c.status || 'NEU';
@@ -1077,19 +1094,21 @@
                         : (c.title || '-');
 
                     return `
-                        <div class="${stCfg.cardBg} border ${stCfg.border} p-3 rounded-xl flex flex-col justify-between gap-2 min-w-[210px] shadow-xs hover:shadow-sm transition">
-                            <div>
+                        <div class="${stCfg.cardBg} border ${stCfg.border} p-3 rounded-xl flex flex-col justify-between gap-2 w-full h-[132px] overflow-hidden shadow-xs hover:shadow-sm transition">
+                            <div class="min-w-0">
                                 <div class="flex items-center justify-between gap-1 mb-1">
-                                    <span class="font-bold text-slate-900 truncate">${escapeHtml(primaryHeading)}</span>
-                                    <button onclick="openEditModal('${c.id}')" title="Bearbeiten" class="text-slate-400 hover:text-slate-700 text-xs">
+                                    <span class="font-bold text-slate-900 text-xs truncate" title="${escapeHtml(primaryHeading)}">${escapeHtml(primaryHeading)}</span>
+                                    <button onclick="openEditModal('${c.id}')" title="Bearbeiten" class="text-slate-400 hover:text-slate-700 text-xs shrink-0">
                                         <i class="fa-solid fa-pen"></i>
                                     </button>
                                 </div>
-                                <p class="text-[11px] font-medium text-slate-600 truncate">${escapeHtml(secondarySubtitle || '-')}</p>
-                                ${c.scopeOfServices ? `<p class="text-[10px] text-slate-500 mt-1.5 line-clamp-2"><i class="fa-solid fa-clipboard-check text-sky-600 mr-1"></i>${escapeHtml(c.scopeOfServices)}</p>` : ''}
+                                <p class="text-[11px] font-medium text-slate-600 truncate" title="${escapeHtml(secondarySubtitle || '-')}">${escapeHtml(secondarySubtitle || '-')}</p>
+                                <p class="text-[10px] text-slate-500 mt-1 line-clamp-2 min-h-[28px]" title="${escapeHtml(c.scopeOfServices || '')}">
+                                    ${c.scopeOfServices ? `<i class="fa-solid fa-clipboard-check text-sky-600 mr-1"></i>${escapeHtml(c.scopeOfServices)}` : ''}
+                                </p>
                             </div>
 
-                            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+                            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between shrink-0">
                                 <select onchange="updateContactStatus('${c.id}', this.value)" class="text-[10px] font-bold px-2 py-0.5 rounded-md ${stCfg.badgeBg} ${stCfg.badgeText} border ${stCfg.border} cursor-pointer focus:outline-none">
                                     <option value="NEU" ${cStatus === 'NEU' ? 'selected' : ''}>⚪ Neu</option>
                                     <option value="ANGEFORDERT" ${cStatus === 'ANGEFORDERT' ? 'selected' : ''}>🟡 Angef.</option>
@@ -1118,7 +1137,7 @@
                             </div>
                         </td>
                         <td class="py-4 px-4 align-top">
-                            <div class="flex flex-wrap gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                                 ${profilesHtml}
                             </div>
                         </td>
