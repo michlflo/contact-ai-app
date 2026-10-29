@@ -386,48 +386,57 @@
                 <div class="bg-amber-50/70 p-3 rounded-xl border border-amber-200/60 space-y-3">
                     <div>
                         <label class="block font-bold text-amber-900 mb-1">
-                            <i class="fa-solid fa-hammer mr-1"></i> Gewerk / Handwerk
+                            <i class="fa-solid fa-hammer mr-1"></i> Gewerk / Handwerk (Mehrfachauswahl möglich)
                         </label>
-                        <select id="form-trade-select" onchange="toggleCustomTradeInput()"
-                            class="w-full p-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 mb-1.5 font-medium">
-                            <option value="">-- Gewerk auswählen --</option>
-                            <optgroup label="Planung & Bauleitung">
-                                <option value="Planung">Planung</option>
-                                <option value="Energieausweis">Energieausweis</option>
-                                <option value="Baumeister">Baumeister</option>
-                            </optgroup>
-                            <optgroup label="Rohbau, Hülle & Dach">
-                                <option value="Zimmerer, Dachdecker & Spengler">Zimmerer, Dachdecker & Spengler</option>
-                                <option value="Fenster, Türen & Tore">Fenster, Türen & Tore</option>
-                                <option value="Sonnenschutz">Sonnenschutz</option>
-                                <option value="Außenputz & Fassade">Außenputz & Fassade</option>
-                            </optgroup>
-                            <optgroup label="Haustechnik & Elektro">
-                                <option value="HKLS (Heizung, Klima, Lüftung, Sanitär)">HKLS (Heizung, Klima, Lüftung,
-                                    Sanitär)</option>
-                                <option value="Elektro / PV">Elektro / PV</option>
-                                <option value="Strom">Strom</option>
-                                <option value="Wasser">Wasser</option>
-                                <option value="Telekom & Internet">Telekom & Internet</option>
-                            </optgroup>
-                            <optgroup label="Rohausbau & Putz">
-                                <option value="Estrich">Estrich</option>
-                                <option value="Innenputz">Innenputz</option>
-                                <option value="Trockenbau">Trockenbau</option>
-                            </optgroup>
-                            <optgroup label="Innenausbau & Montage">
-                                <option value="Schlosser">Schlosser</option>
-                                <option value="Innentüren & Glas">Innentüren & Glas</option>
-                                <option value="Bodenleger">Bodenleger</option>
-                                <option value="Fliesenleger">Fliesenleger</option>
-                                <option value="Maler">Maler</option>
-                                <option value="Tischler">Tischler</option>
-                                <option value="Küche">Küche</option>
-                            </optgroup>
-                            <option value="CUSTOM">➕ Anderes Gewerk eingeben...</option>
-                        </select>
-                        <input type="text" id="form-trade" placeholder="Individuelles Gewerk eingeben..."
-                            class="w-full p-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 hidden">
+                        <div id="form-trades-chips" class="flex flex-wrap gap-1.5 mb-2 min-h-[26px]"></div>
+                        <div class="flex gap-1.5 mb-1.5">
+                            <select id="form-trade-select" onchange="handleTradeSelectChange()"
+                                class="flex-1 p-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 font-medium">
+                                <option value="">+ Gewerk hinzufügen...</option>
+                                <optgroup label="Planung & Bauleitung">
+                                    <option value="Planung">Planung</option>
+                                    <option value="Energieausweis">Energieausweis</option>
+                                    <option value="Baumeister">Baumeister</option>
+                                </optgroup>
+                                <optgroup label="Rohbau, Hülle & Dach">
+                                    <option value="Zimmerer">Zimmerer</option>
+                                    <option value="Dachdecker & Spengler">Dachdecker & Spengler</option>
+                                    <option value="Zimmerer, Dachdecker & Spengler">Zimmerer, Dachdecker & Spengler</option>
+                                    <option value="Fenster, Türen & Tore">Fenster, Türen & Tore</option>
+                                    <option value="Sonnenschutz">Sonnenschutz</option>
+                                    <option value="Außenputz & Fassade">Außenputz & Fassade</option>
+                                </optgroup>
+                                <optgroup label="Haustechnik & Elektro">
+                                    <option value="HKLS (Heizung, Klima, Lüftung, Sanitär)">HKLS (Heizung, Klima, Lüftung, Sanitär)</option>
+                                    <option value="Elektro / PV">Elektro / PV</option>
+                                    <option value="Strom">Strom</option>
+                                    <option value="Wasser">Wasser</option>
+                                    <option value="Telekom & Internet">Telekom & Internet</option>
+                                </optgroup>
+                                <optgroup label="Rohausbau & Putz">
+                                    <option value="Estrich">Estrich</option>
+                                    <option value="Innenputz">Innenputz</option>
+                                    <option value="Trockenbau">Trockenbau</option>
+                                </optgroup>
+                                <optgroup label="Innenausbau & Montage">
+                                    <option value="Schlosser">Schlosser</option>
+                                    <option value="Innentüren & Glas">Innentüren & Glas</option>
+                                    <option value="Bodenleger">Bodenleger</option>
+                                    <option value="Fliesenleger">Fliesenleger</option>
+                                    <option value="Maler">Maler</option>
+                                    <option value="Tischler">Tischler</option>
+                                    <option value="Küche">Küche</option>
+                                </optgroup>
+                                <option value="CUSTOM">➕ Eigenes Gewerk eingeben...</option>
+                            </select>
+                        </div>
+                        <div id="custom-trade-wrapper" class="flex gap-1.5 hidden">
+                            <input type="text" id="form-trade" placeholder="Eigenes Gewerk eingeben und + klicken..."
+                                onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomTradeFromInput();}"
+                                class="flex-1 p-2 bg-white border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500">
+                            <button type="button" onclick="addCustomTradeFromInput()"
+                                class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs transition">+ Hinzufügen</button>
+                        </div>
                     </div>
                     <div>
                         <label class="block font-bold text-amber-900 mb-1">
@@ -699,7 +708,7 @@
                     firstName: { type: "STRING", description: "Vorname der Person" },
                     lastName: { type: "STRING", description: "Nachname der Person" },
                     organization: { type: "STRING", description: "Firma, Handwerksbetrieb oder Firmenname" },
-                    trade: { type: "STRING", description: "Exaktes Gewerk aus der Liste: Planung, Energieausweis, Zimmerer, Dachdecker & Spengler, Baumeister, Fenster, Türen & Tore, Sonnenschutz, Außenputz & Fassade, Elektro / PV, HKLS, Strom, Wasser, Telekom & Internet, Schlosser, Innentüren & Glas, Bodenleger, Maler, Estrich, Innenputz, Tischler, Fliesenleger, Küche, Trockenbau" },
+                    trade: { type: "STRING", description: "Alle passenden Gewerke der Firma aus dieser Liste (falls mehrere zutreffen, mit ' | ' trennen, z. B. 'Elektro / PV | HKLS (Heizung, Klima, Lüftung, Sanitär)'): Planung, Energieausweis, Zimmerer, Dachdecker & Spengler, Baumeister, Fenster, Türen & Tore, Sonnenschutz, Außenputz & Fassade, Elektro / PV, HKLS (Heizung, Klima, Lüftung, Sanitär), Strom, Wasser, Telekom & Internet, Schlosser, Innentüren & Glas, Bodenleger, Maler, Estrich, Innenputz, Tischler, Fliesenleger, Küche, Trockenbau" },
                     scopeOfServices: { type: "STRING", description: "Konkreter Leistungsumfang im Sanierungsbereich" },
                     title: { type: "STRING", description: "Berufsbezeichnung oder Rolle" },
                     email: { type: "STRING", description: "E-Mail Adresse" },
@@ -802,7 +811,7 @@
 
                 // Präziser System-Prompt mit Anforderung exakter Gewerke & Daten
                 const systemPrompt = "Du bist ein hochpräziser KI-Extraktor für Firmenkontakte, Handwerk und Sanierung. Suche nach den exakten Firmen- und Impressumsdaten zur angegebenen Website/Domain (Ansprechpartner/Geschäftsführer, genaue Firma, Telefonnummer, E-Mail, Adresse PLZ/Ort). Bestimme präzise das Gewerk (z. B. Heizung & Sanitär, Elektro, Dachdecker, Maler) und den genauen Leistungsumfang (z. B. Gas- und Wasserinstallation, Badsanierung, Heizungsbau).";
-                const userQuery = `Extrahiere aus dem folgenden Webseiten-Text (${formattedUrl}) GENAU EINEN Kontakt (den Geschäftsführer/Ansprechpartner laut Impressum). Fülle ALLE Felder aus, soweit im Text vorhanden: firstName, lastName, organization (vollständiger Firmenname inkl. Rechtsform), title, email, phone, address (Straße, PLZ, Ort), website, trade (nur ein Gewerk aus der Liste im Schema), scopeOfServices (kommagetrennte Leistungen, z. B. Dachstühle, Holzriegelbau, Carports), openingHours (Öffnungszeiten kompakt im Format 'Mo-Do 07:00-12:00, 13:00-16:00; Fr 07:00-12:00'), notes (fasse die Inhalte der Website in 1–2 aussagekräftigen Sätzen zusammen: was macht die Firma besonders, was sind ihre Alleinstellungsmerkmale/USPs, Spezialisierungen oder Werte – schreibe hier KEINE Impressums-/Registerdaten wie Firmenbuchnummer, Firmengericht, UID, Firmensitz oder Öffnungszeiten hinein). Schreibe nur in das jeweils passende Feld, nicht alles in ein Feld. Nutze nur Informationen aus dem Text:\n\n${pageText}`;
+                const userQuery = `Extrahiere aus dem folgenden Webseiten-Text (${formattedUrl}) GENAU EINEN Kontakt (den Geschäftsführer/Ansprechpartner laut Impressum). Fülle ALLE Felder aus, soweit im Text vorhanden: firstName, lastName, organization (vollständiger Firmenname inkl. Rechtsform), title, email, phone, address (Straße, PLZ, Ort), website, trade (alle passenden Gewerke der Firma aus der Liste im Schema; falls der Betrieb mehrere Gewerke abdeckt – z. B. Elektro + HKLS oder Zimmerer + Dachdecker – gib alle zutreffenden Gewerke getrennt mit ' | ' an), scopeOfServices (kommagetrennte Leistungen, z. B. Dachstühle, Holzriegelbau, Carports), openingHours (Öffnungszeiten kompakt im Format 'Mo-Do 07:00-12:00, 13:00-16:00; Fr 07:00-12:00'), notes (fasse die Inhalte der Website in 1–2 aussagekräftigen Sätzen zusammen: was macht die Firma besonders, was sind ihre Alleinstellungsmerkmale/USPs, Spezialisierungen oder Werte – schreibe hier KEINE Impressums-/Registerdaten wie Firmenbuchnummer, Firmengericht, UID, Firmensitz oder Öffnungszeiten hinein). Schreibe nur in das jeweils passende Feld, nicht alles in ein Feld. Nutze nur Informationen aus dem Text:\n\n${pageText}`;
 
                 const payload = {
                     contents: [{ parts: [{ text: userQuery }] }],
@@ -1000,6 +1009,20 @@
             }
         }
 
+        // Hilfsfunktionen für mehrere Gewerke pro Kontakt (gespeichert in c.trade getrennt mit " | ")
+        function parseTrades(tradeStr) {
+            if (!tradeStr || !String(tradeStr).trim()) return [];
+            const raw = String(tradeStr).trim();
+            if (raw.includes('|') || raw.includes(';')) {
+                return [...new Set(raw.split(/\s*[|;]\s*/).map(s => s.trim()).filter(Boolean))];
+            }
+            return [raw];
+        }
+
+        function formatTrades(tradesArr) {
+            return [...new Set((tradesArr || []).map(s => String(s).trim()).filter(Boolean))].join(' | ');
+        }
+
         // Render Matrix View
         function renderMatrixView() {
             const tbody = document.getElementById('matrix-tbody');
@@ -1018,6 +1041,8 @@
                 "Planung",
                 "Energieausweis",
                 "Baumeister",
+                "Zimmerer",
+                "Dachdecker & Spengler",
                 "Zimmerer, Dachdecker & Spengler",
                 "Fenster, Türen & Tore",
                 "Sonnenschutz",
@@ -1039,22 +1064,25 @@
                 "Küche"
             ];
 
-            // Map der Kontakte nach exaktem Gewerk
+            // Map der Kontakte nach Gewerk (ein Kontakt mit mehreren Gewerken erscheint in jeder passenden Zeile)
             const tradeMap = {};
 
             contacts.forEach(c => {
-                const rawTrade = (c.trade || 'Sanierung / Allgemein').trim();
+                const contactTrades = parseTrades(c.trade);
+                const list = contactTrades.length ? contactTrades : ['Sanierung / Allgemein'];
 
-                // Prüfe ob das Profil-Gewerk einem der Standardgewerke entspricht
-                let matchedTrade = tradeOrder.find(t => t.toLowerCase() === rawTrade.toLowerCase());
-                if (!matchedTrade) {
-                    matchedTrade = rawTrade; // Falls benutzerdefiniertes Gewerk
-                }
-
-                if (!tradeMap[matchedTrade]) {
-                    tradeMap[matchedTrade] = [];
-                }
-                tradeMap[matchedTrade].push(c);
+                list.forEach(rawTrade => {
+                    let matchedTrade = tradeOrder.find(t => t.toLowerCase() === rawTrade.toLowerCase());
+                    if (!matchedTrade) {
+                        matchedTrade = rawTrade;
+                    }
+                    if (!tradeMap[matchedTrade]) {
+                        tradeMap[matchedTrade] = [];
+                    }
+                    if (!tradeMap[matchedTrade].some(existing => existing.id === c.id)) {
+                        tradeMap[matchedTrade].push(c);
+                    }
+                });
             });
 
             // Sortiere die vorhandenen Gewerke-Zeilen entsprechend der definierten Gewerk-Reihenfolge
@@ -1260,13 +1288,13 @@
 
             if (!container || !emptyState) return;
 
-            // Gewerk-Filter-Dropdown dynamisch aus vorhandenen Kontakten befüllen
+            // Gewerk-Filter-Dropdown dynamisch aus vorhandenen Kontakten befüllen (inkl. Mehrfach-Gewerke)
             if (tradeFilterEl) {
                 const currentSelectedTrade = tradeFilterEl.value || 'ALL';
-                const uniqueTrades = [...new Set(contacts.map(c => (c.trade || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'de'));
+                const uniqueTrades = [...new Set(contacts.flatMap(c => parseTrades(c.trade)))].sort((a, b) => a.localeCompare(b, 'de'));
                 tradeFilterEl.innerHTML = `<option value="ALL">Alle Gewerke (${contacts.length})</option>` +
                     uniqueTrades.map(t => {
-                        const count = contacts.filter(c => (c.trade || '').trim() === t).length;
+                        const count = contacts.filter(c => parseTrades(c.trade).includes(t)).length;
                         return `<option value="${escapeHtml(t)}" ${t === currentSelectedTrade ? 'selected' : ''}>${escapeHtml(t)} (${count})</option>`;
                     }).join('');
                 if (currentSelectedTrade !== 'ALL' && !uniqueTrades.includes(currentSelectedTrade)) {
@@ -1279,7 +1307,7 @@
                 const fullStr = `${c.firstName} ${c.lastName} ${c.organization} ${c.trade} ${c.scopeOfServices} ${c.title} ${c.email}`.toLowerCase();
                 const matchesSearch = fullStr.includes(searchVal);
                 const matchesStatus = statusFilter === 'ALL' || (c.status || 'NEU') === statusFilter;
-                const matchesTrade = tradeFilter === 'ALL' || (c.trade || '').trim() === tradeFilter;
+                const matchesTrade = tradeFilter === 'ALL' || parseTrades(c.trade).includes(tradeFilter);
                 return matchesSearch && matchesStatus && matchesTrade;
             });
 
@@ -1313,13 +1341,13 @@
                                 ${escapeHtml(avatarInitials || 'F')}
                             </div>
                             <div>
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <h4 class="font-bold text-slate-900 text-base leading-tight">${escapeHtml(primaryHeading)}</h4>
-                                    ${c.trade ? `
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <h4 class="font-bold text-slate-900 text-base leading-tight mr-0.5">${escapeHtml(primaryHeading)}</h4>
+                                    ${parseTrades(c.trade).map(t => `
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100/90 text-amber-900 border border-amber-300">
-                                            <i class="fa-solid fa-hammer text-[9px] mr-1"></i>${escapeHtml(c.trade)}
+                                            <i class="fa-solid fa-hammer text-[9px] mr-1"></i>${escapeHtml(t)}
                                         </span>
-                                    ` : ''}
+                                    `).join('')}
                                 </div>
                                 <p class="text-xs text-slate-600 font-medium mt-0.5">
                                     ${escapeHtml(secondarySubtitle)}
@@ -1433,16 +1461,66 @@
             }).join('');
         }
 
-        // Modal Logic
-        function toggleCustomTradeInput() {
+        // Modal Logic (Multi-Gewerk Auswahl mit Chips)
+        let currentFormTrades = [];
+
+        function renderFormTradesChips() {
+            const container = document.getElementById('form-trades-chips');
+            if (!container) return;
+            if (currentFormTrades.length === 0) {
+                container.innerHTML = `<span class="text-[11px] text-amber-800/60 italic py-0.5">Noch kein Gewerk ausgewählt – unten über das Dropdown hinzufügen.</span>`;
+                return;
+            }
+            container.innerHTML = currentFormTrades.map((t, idx) => `
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-200/80 text-amber-950 border border-amber-400 shadow-2xs">
+                    <i class="fa-solid fa-hammer text-[10px]"></i>
+                    <span>${escapeHtml(t)}</span>
+                    <button type="button" onclick="removeFormTrade(${idx})" title="Gewerk entfernen" class="ml-0.5 text-amber-800 hover:text-red-600 transition">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </span>
+            `).join('');
+        }
+
+        function addFormTrade(tradeName) {
+            const cleaned = (tradeName || '').trim();
+            if (!cleaned) return;
+            if (!currentFormTrades.some(t => t.toLowerCase() === cleaned.toLowerCase())) {
+                currentFormTrades.push(cleaned);
+                renderFormTradesChips();
+            }
+        }
+
+        function removeFormTrade(index) {
+            currentFormTrades.splice(index, 1);
+            renderFormTradesChips();
+        }
+
+        function handleTradeSelectChange() {
             const selectEl = document.getElementById('form-trade-select');
+            const customWrapper = document.getElementById('custom-trade-wrapper');
             const customInput = document.getElementById('form-trade');
             if (selectEl.value === 'CUSTOM') {
-                customInput.classList.remove('hidden');
+                customWrapper.classList.remove('hidden');
                 customInput.focus();
+            } else if (selectEl.value) {
+                addFormTrade(selectEl.value);
+                selectEl.value = '';
+                customWrapper.classList.add('hidden');
             } else {
-                customInput.classList.add('hidden');
-                customInput.value = selectEl.value;
+                customWrapper.classList.add('hidden');
+            }
+        }
+
+        function addCustomTradeFromInput() {
+            const customInput = document.getElementById('form-trade');
+            const customWrapper = document.getElementById('custom-trade-wrapper');
+            const selectEl = document.getElementById('form-trade-select');
+            if (customInput.value.trim()) {
+                addFormTrade(customInput.value.trim());
+                customInput.value = '';
+                customWrapper.classList.add('hidden');
+                selectEl.value = '';
             }
         }
 
@@ -1452,7 +1530,11 @@
             form.reset();
 
             const selectEl = document.getElementById('form-trade-select');
+            const customWrapper = document.getElementById('custom-trade-wrapper');
             const customInput = document.getElementById('form-trade');
+            selectEl.value = '';
+            customWrapper.classList.add('hidden');
+            customInput.value = '';
 
             if (contactId) {
                 const c = contacts.find(item => item.id === contactId);
@@ -1462,22 +1544,8 @@
                     document.getElementById('form-lastName').value = c.lastName || '';
                     document.getElementById('form-organization').value = c.organization || '';
 
-                    // Gewerk-Select oder Custom-Anzeige
-                    const currentTrade = c.trade || '';
-                    let matchedOption = Array.from(selectEl.options).some(opt => opt.value === currentTrade);
-                    if (matchedOption) {
-                        selectEl.value = currentTrade;
-                        customInput.classList.add('hidden');
-                        customInput.value = currentTrade;
-                    } else if (currentTrade) {
-                        selectEl.value = 'CUSTOM';
-                        customInput.classList.remove('hidden');
-                        customInput.value = currentTrade;
-                    } else {
-                        selectEl.value = '';
-                        customInput.classList.add('hidden');
-                        customInput.value = '';
-                    }
+                    currentFormTrades = parseTrades(c.trade);
+                    renderFormTradesChips();
 
                     document.getElementById('form-scopeOfServices').value = c.scopeOfServices || '';
                     document.getElementById('form-status').value = c.status || 'NEU';
@@ -1493,9 +1561,8 @@
             } else {
                 document.getElementById('form-id').value = '';
                 document.getElementById('form-status').value = 'NEU';
-                selectEl.value = '';
-                customInput.classList.add('hidden');
-                customInput.value = '';
+                currentFormTrades = [];
+                renderFormTradesChips();
                 document.getElementById('modal-title').innerText = "Neuer Sanierungskontakt";
             }
 
@@ -1510,9 +1577,13 @@
             e.preventDefault();
             const id = document.getElementById('form-id').value;
 
-            const selectEl = document.getElementById('form-trade-select');
+            // Falls noch Text im offenen Custom-Gewerk-Feld steht, automatisch übernehmen
             const customInput = document.getElementById('form-trade');
-            const selectedTrade = selectEl.value === 'CUSTOM' ? customInput.value.trim() : selectEl.value;
+            if (customInput && customInput.value.trim()) {
+                addFormTrade(customInput.value.trim());
+                customInput.value = '';
+            }
+            const selectedTrade = formatTrades(currentFormTrades);
 
             const contactData = {
                 firstName: document.getElementById('form-firstName').value.trim(),
