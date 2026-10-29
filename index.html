@@ -254,10 +254,6 @@
                         class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition flex items-center gap-1 whitespace-nowrap">
                         <i class="fa-solid fa-code"></i> JSON
                     </button>
-                    <button onclick="clearAllContacts()"
-                        class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition flex items-center gap-1 whitespace-nowrap">
-                        <i class="fa-solid fa-trash-can"></i> Löschen
-                    </button>
                 </div>
             </div>
 
@@ -1560,13 +1556,6 @@
             contacts = contacts.filter(c => c.id !== id);
             renderContacts();
             showToast("Kontakt gelöscht", "info");
-        }
-
-        function clearAllContacts() {
-            if (contacts.length === 0) return;
-            contacts = [];
-            renderContacts();
-            showToast("Alle Kontakte gelöscht", "info");
         }
 
         // vCard Generation including Trade and Scope in Note
