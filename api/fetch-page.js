@@ -42,7 +42,6 @@ export default async function handler(req, res) {
                 metas.push(`${m[1]}: ${decodeEntities(m[2])}`);
             }
         }
-        // Auch umgekehrte Reihenfolge content=... name=...
         const metaRegex2 = /<meta\s+[^>]*?content=["']([^"']+)["'][^>]*?(?:name|property)=["']([^"']+)["'][^>]*?>/gi;
         while ((m = metaRegex2.exec(html)) !== null) {
             const k = m[2].toLowerCase();
@@ -67,7 +66,6 @@ export default async function handler(req, res) {
         if (!html) return '';
         const metaHeader = extractMetaAndContacts(html);
 
-        // Entferne Scripts, Styles, Kommentare sowie Cookie-/Consent-Container und große Menüs
         let body = html
             .replace(/<!--[\s\S]*?-->/g, ' ')
             .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -79,8 +77,7 @@ export default async function handler(req, res) {
 
         body = decodeEntities(body).replace(/\s+/g, ' ').trim();
 
-        // Falls immer noch langer Cookie-Banner-Text am Anfang steht, überspringe ihn bis zum eigentlichen Seiteninhalt
-        const impressumIdx = body.search(/\b(Medieninhaber|Für den Inhalt verantwortlich|Informationspflicht|Unternehmensgegenstand|Geschäftsführer|Inhaber)\b/i);
+        const impressumIdx = body.search(/\b(Medieninhaber|Für den Inhalt verantwortlich|Urheber\s*\/\s*Herausgeber|Informationspflicht|Unternehmensgegenstand|Geschäftsführer|Geschäftsführung|Inhaber)\b/i);
         let relevantBody = body;
         if (impressumIdx > 400) {
             const fromImpressum = body.slice(Math.max(0, impressumIdx - 200));
@@ -92,40 +89,97 @@ export default async function handler(req, res) {
                 relevantBody = fromImpressum.slice(0, headPart) + ' ... ' + fromImpressum.slice(fromImpressum.length - tailPart);
             }
         } else if (body.length > maxLen) {
-            // Nimm Anfang und Ende (Footer enthält oft Adresse/Tel/Öffnungszeiten)
             const half = Math.floor(maxLen * 0.65);
             const tail = maxLen - half;
             relevantBody = body.slice(0, half) + ' ... ' + body.slice(body.length - tail);
         }
 
-        // Öffnungszeiten-Block im gesamten Seitentext gezielt aufspüren, falls er sonst abgeschnitten würde
         const ohMatch = body.match(/.{0,40}\b(?:Öffnungszeiten|Oeffnungszeiten|Bürozeiten|Geschäftszeiten)\b[\s\S]{0,220}/i);
         const ohSnippet = ohMatch ? 'Gefundene Öffnungszeiten im Text: ' + ohMatch[0].replace(/\s+/g, ' ').trim() : '';
 
         return [metaHeader, ohSnippet, relevantBody.slice(0, maxLen)].filter(Boolean).join('\n');
     };
 
-    const get = async (u) => {
+    const get = async (u, timeoutMs = 8000) => {
         const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 6000);
+        const t = setTimeout(() => ctrl.abort(), timeoutMs);
         try {
-            const r = await fetch(u, { signal: ctrl.signal, headers: { 'User-Agent': 'Mozilla/5.0 (ContactAI)' } });
+            const r = await fetch(u, {
+                signal: ctrl.signal,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'de-AT,de;q=0.9,en;q=0.8'
+                }
+            });
             if (!r.ok) return '';
-            return await r.text();
-        } catch { return ''; } finally { clearTimeout(t); }
+            const buf = await r.arrayBuffer();
+            const ct = r.headers.get('content-type') || '';
+            const headAscii = new TextDecoder('ascii').decode(buf.slice(0, 2048));
+            const isLatin1 = /charset\s*=\s*(?:iso-8859-1|windows-1252|latin1)/i.test(ct) || /charset\s*=\s*(?:iso-8859-1|windows-1252|latin1)/i.test(headAscii);
+            let decoded = new TextDecoder(isLatin1 ? 'windows-1252' : 'utf-8').decode(buf);
+            // Repariere doppelt UTF-8-kodierte Mojibake-Zeichen (z. B. "WÃ¼nsche" -> "Wünsche")
+            if (/Ã[¤¶¼„–œŸ]/.test(decoded)) {
+                try {
+                    const bytes = Uint8Array.from(decoded, c => c.charCodeAt(0) & 0xff);
+                    const fixed = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+                    decoded = fixed;
+                } catch {}
+            }
+            return decoded;
+        } catch {
+            return '';
+        } finally {
+            clearTimeout(t);
+        }
     };
 
-    const base = target.origin;
-    const pages = [
-        { label: 'IMPRESSUM', url: base + '/impressum', max: 3500 },
-        { label: 'KONTAKT', url: base + '/kontakt', max: 2500 },
-        { label: 'STARTSEITE', url: target.href, max: 3500 },
+    // Entdecke echte Impressums- und Kontakt-Links direkt aus dem HTML der Startseite
+    const discoverSubpageUrl = (html, baseUrl, pattern, fallbackPath) => {
+        if (html) {
+            const linkRegex = /<a\s+[^>]*?href=["']([^"'#]+)["'][^>]*?>([\s\S]*?)<\/a>/gi;
+            let m;
+            const candidates = [];
+            while ((m = linkRegex.exec(html)) !== null) {
+                const href = m[1].trim();
+                const linkText = m[2].replace(/<[^>]+>/g, ' ').trim();
+                if (/^(mailto:|tel:|javascript:)/i.test(href)) continue;
+                if (pattern.test(href) || pattern.test(linkText)) {
+                    try {
+                        const resolved = new URL(href, baseUrl);
+                        if (resolved.hostname === baseUrl.hostname && !/datenschutz|privacy/i.test(resolved.pathname)) {
+                            candidates.push(resolved.href);
+                        }
+                    } catch {}
+                }
+            }
+            if (candidates.length > 0) return candidates[0];
+        }
+        return baseUrl.origin + fallbackPath;
+    };
+
+    // 1. Lade zuerst die eingegebene Seite selbst
+    const mainHtml = await get(target.href, 9000);
+
+    // 2. Ermittle die tatsächlichen URLs für Impressum und Kontakt (z. B. /content/de/impressum/)
+    const impressumUrl = discoverSubpageUrl(mainHtml, target, /\b(impressum|imprint|offenlegung)\b/i, '/impressum');
+    const kontaktUrl = discoverSubpageUrl(mainHtml, target, /\b(kontakt|service-kontakt|contact)\b/i, '/kontakt');
+
+    const [impressumHtml, kontaktHtml] = await Promise.all([
+        impressumUrl !== target.href ? get(impressumUrl, 6000) : Promise.resolve(''),
+        kontaktUrl !== target.href && kontaktUrl !== impressumUrl ? get(kontaktUrl, 6000) : Promise.resolve('')
+    ]);
+
+    const sections = [
+        { label: 'IMPRESSUM', html: impressumHtml, max: 3500 },
+        { label: 'KONTAKT', html: kontaktHtml, max: 2500 },
+        { label: 'STARTSEITE', html: mainHtml, max: 3500 },
     ];
-    const htmls = await Promise.all(pages.map(p => get(p.url)));
-    const text = pages
-        .map((p, i) => ({ p, t: clean(htmls[i], p.max) }))
+
+    const text = sections
+        .map(s => ({ label: s.label, t: clean(s.html, s.max) }))
         .filter(x => x.t)
-        .map(x => `[${x.p.label}]\n${x.t}`)
+        .map(x => `[${x.label}]\n${x.t}`)
         .join('\n\n');
 
     if (!text) return res.status(502).json({ error: 'Webseite konnte nicht geladen werden' });
