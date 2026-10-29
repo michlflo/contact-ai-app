@@ -797,21 +797,46 @@
             showLoading(true, "Webseite & Impressum wird analysiert...", "KI sucht nach exakten Firmen- und Kontaktdaten sowie Gewerk...");
 
             try {
+                let pageText = '';
                 const pageRes = await fetch('/api/fetch-page', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: formattedUrl })
                 });
-                if (!pageRes.ok) {
-                    showToast("Webseite konnte nicht geladen werden.", "error");
-                    showLoading(false);
-                    return;
+                if (pageRes.ok) {
+                    const pageData = await pageRes.json();
+                    pageText = pageData.text || '';
+                } else {
+                    // Fallback für österreichische Webserver, die Cloud-/Rechenzentrums-IPs (Vercel) blockieren:
+                    // Abruf über den Browser der Nutzer-IP bzw. KI-Firmendaten-Extraktion
+                    try {
+                        const wbCdx = await fetch(`https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(formattedUrl)}&output=json&filter=statuscode:200&limit=-1`);
+                        if (wbCdx.ok) {
+                            const rows = await wbCdx.json();
+                            if (Array.isArray(rows) && rows[1]) {
+                                const [, ts, orig] = rows[1];
+                                const wbPage = await fetch(`https://web.archive.org/web/${ts}id_/${orig}`);
+                                if (wbPage.ok) {
+                                    const mainHtml = await wbPage.text();
+                                    const cleanRes = await fetch('/api/fetch-page', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ url: formattedUrl, clientHtmls: { main: mainHtml } })
+                                    });
+                                    if (cleanRes.ok) pageText = (await cleanRes.json()).text || '';
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Browser archive fallback skipped:', e);
+                    }
                 }
-                const { text: pageText } = await pageRes.json();
 
                 // Präziser System-Prompt mit Anforderung exakter Gewerke & Daten
                 const systemPrompt = "Du bist ein hochpräziser KI-Extraktor für Firmenkontakte, Handwerk und Sanierung. Suche nach den exakten Firmen- und Impressumsdaten zur angegebenen Website/Domain (Ansprechpartner/Geschäftsführer, genaue Firma, Telefonnummer, E-Mail, Adresse PLZ/Ort). Bestimme präzise das Gewerk (z. B. Heizung & Sanitär, Elektro, Dachdecker, Maler) und den genauen Leistungsumfang (z. B. Gas- und Wasserinstallation, Badsanierung, Heizungsbau).";
-                const userQuery = `Extrahiere aus dem folgenden Webseiten-Text (${formattedUrl}) GENAU EINEN Kontakt (den Geschäftsführer/Ansprechpartner laut Impressum). Fülle ALLE Felder aus, soweit im Text vorhanden: firstName, lastName, organization (vollständiger Firmenname inkl. Rechtsform), title, email, phone, address (Straße, PLZ, Ort), website, trade (alle passenden Gewerke der Firma aus der Liste im Schema; falls der Betrieb mehrere Gewerke abdeckt – z. B. Elektro + HKLS oder Zimmerer + Dachdecker – gib alle zutreffenden Gewerke getrennt mit ' | ' an), scopeOfServices (kommagetrennte Leistungen, z. B. Dachstühle, Holzriegelbau, Carports), openingHours (Öffnungszeiten kompakt im Format 'Mo-Do 07:00-12:00, 13:00-16:00; Fr 07:00-12:00'), notes (fasse die Inhalte der Website in 1–2 aussagekräftigen Sätzen zusammen: was macht die Firma besonders, was sind ihre Alleinstellungsmerkmale/USPs, Spezialisierungen oder Werte – schreibe hier KEINE Impressums-/Registerdaten wie Firmenbuchnummer, Firmengericht, UID, Firmensitz oder Öffnungszeiten hinein). Schreibe nur in das jeweils passende Feld, nicht alles in ein Feld. Nutze nur Informationen aus dem Text:\n\n${pageText}`;
+                const userQuery = pageText
+                    ? `Extrahiere aus dem folgenden Webseiten-Text (${formattedUrl}) GENAU EINEN Kontakt (den Geschäftsführer/Ansprechpartner laut Impressum). Fülle ALLE Felder aus, soweit im Text vorhanden: firstName, lastName, organization (vollständiger Firmenname inkl. Rechtsform), title, email, phone, address (Straße, PLZ, Ort), website, trade (alle passenden Gewerke der Firma aus der Liste im Schema; falls der Betrieb mehrere Gewerke abdeckt – z. B. Elektro + HKLS oder Zimmerer + Dachdecker – gib alle zutreffenden Gewerke getrennt mit ' | ' an), scopeOfServices (kommagetrennte Leistungen, z. B. Dachstühle, Holzriegelbau, Carports), openingHours (Öffnungszeiten kompakt im Format 'Mo-Do 07:00-12:00, 13:00-16:00; Fr 07:00-12:00'), notes (fasse die Inhalte der Website in 1–2 aussagekräftigen Sätzen zusammen: was macht die Firma besonders, was sind ihre Alleinstellungsmerkmale/USPs, Spezialisierungen oder Werte – schreibe hier KEINE Impressums-/Registerdaten wie Firmenbuchnummer, Firmengericht, UID, Firmensitz oder Öffnungszeiten hinein). Schreibe nur in das jeweils passende Feld, nicht alles in ein Feld. Nutze nur Informationen aus dem Text:\n\n${pageText}`
+                    : `Die Website ${formattedUrl} blockiert direkte Server-Anfragen (Geo-/Firewall-Schutz). Ermittle für das Unternehmen hinter ${formattedUrl} GENAU EINEN Kontakt mit allen bekannten Firmendaten: firstName, lastName, organization (vollständiger Firmenname inkl. Rechtsform), title, email, phone, address (Straße, PLZ, Ort), website (${formattedUrl}), trade (alle passenden Gewerke aus der Liste im Schema, getrennt mit ' | '), scopeOfServices (kommagetrennte Leistungen), notes (1–2 Sätze zu den Alleinstellungsmerkmalen und Schwerpunkten der Firma).`;
 
                 const payload = {
                     contents: [{ parts: [{ text: userQuery }] }],

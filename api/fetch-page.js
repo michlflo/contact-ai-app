@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    const { url } = req.body || {};
+    const { url, clientHtmls } = req.body || {};
     let target;
     try {
         target = new URL(url);
@@ -182,6 +182,21 @@ export default async function handler(req, res) {
         }
         return baseUrl.origin + fallbackPath;
     };
+
+    // Falls der Browser bereits vorab HTML übermittelt hat (für Server mit Cloud-IP-Sperre)
+    if (clientHtmls && (clientHtmls.main || clientHtmls.impressum || clientHtmls.kontakt)) {
+        const clientSections = [
+            { label: 'IMPRESSUM', html: clientHtmls.impressum || '', max: 3500 },
+            { label: 'KONTAKT', html: clientHtmls.kontakt || '', max: 2500 },
+            { label: 'STARTSEITE', html: clientHtmls.main || '', max: 3500 },
+        ];
+        const clientText = clientSections
+            .map(s => ({ label: s.label, t: clean(s.html, s.max) }))
+            .filter(x => x.t)
+            .map(x => `[${x.label}]\n${x.t}`)
+            .join('\n\n');
+        if (clientText) return res.status(200).json({ text: clientText });
+    }
 
     // 1. Lade zuerst die eingegebene Seite selbst
     let mainHtml = await fetchRawHtml(target.href, 4500);
