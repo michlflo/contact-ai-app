@@ -65,18 +65,7 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <span id="contactCountBadge"
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-800">
-                    0 Kontakte gespeichert
-                </span>
-                <button onclick="openInstallModal()"
-                    class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-sky-600 hover:bg-sky-700 text-white shadow-sm transition">
-                    <i class="fa-solid fa-mobile-screen-button"></i> App installieren
-                </button>
-                <button onclick="exportAllContacts('vcf')"
-                    class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
-                    <i class="fa-solid fa-file-export text-slate-500"></i> Alle als vCard (.vcf)
-                </button>
+                <span id="contactCountBadge" class="hidden">0 Kontakte gespeichert</span>
             </div>
         </div>
     </header>
@@ -953,6 +942,15 @@
             }
         }
 
+        function normalizeWebsiteUrl(rawUrl) {
+            if (!rawUrl || !rawUrl.trim()) return '';
+            let u = rawUrl.trim();
+            if (!/^https?:\/\//i.test(u)) {
+                u = 'https://' + u.replace(/^\/+/, '');
+            }
+            return u;
+        }
+
         // Process Extracted Contacts
         function addExtractedContacts(items, sourceUrl = '') {
             if (!Array.isArray(items) || items.length === 0) {
@@ -974,7 +972,7 @@
                         title: item.title || '',
                         email: item.email || '',
                         phone: item.phone || '',
-                        website: item.website || sourceUrl || '',
+                        website: normalizeWebsiteUrl(item.website || sourceUrl || ''),
                         address: item.address || '',
                         openingHours: item.openingHours || '',
                         notes: item.notes || '',
@@ -1374,9 +1372,9 @@
                         ` : ''}
 
                         ${c.website ? `
-                            <a href="${escapeHtml(c.website)}" target="_blank" class="flex items-center gap-2 hover:text-sky-600 truncate sm:col-span-2">
+                            <a href="${escapeHtml(normalizeWebsiteUrl(c.website))}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 hover:text-sky-600 truncate sm:col-span-2">
                                 <i class="fa-solid fa-link text-slate-500 w-4"></i>
-                                <span class="truncate underline text-sky-700 font-medium">${escapeHtml(c.website)}</span>
+                                <span class="truncate underline text-sky-700 font-medium">${escapeHtml(normalizeWebsiteUrl(c.website))}</span>
                             </a>
                         ` : ''}
 
@@ -1517,7 +1515,7 @@
                 title: document.getElementById('form-title').value.trim(),
                 email: document.getElementById('form-email').value.trim(),
                 phone: document.getElementById('form-phone').value.trim(),
-                website: document.getElementById('form-website').value.trim(),
+                website: normalizeWebsiteUrl(document.getElementById('form-website').value.trim()),
                 address: document.getElementById('form-address').value.trim(),
                 openingHours: document.getElementById('form-openingHours').value.trim(),
                 notes: document.getElementById('form-notes').value.trim()
