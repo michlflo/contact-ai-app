@@ -1059,16 +1059,22 @@
                     const cStatus = c.status || 'NEU';
                     const stCfg = STATUS_CONFIG[cStatus] || STATUS_CONFIG['NEU'];
 
+                    const personFullName = [c.firstName, c.lastName].filter(n => n && n !== 'Unbekannt').join(' ').trim();
+                    const primaryHeading = c.organization || personFullName || 'Unbekannter Betrieb';
+                    const secondarySubtitle = c.organization
+                        ? [personFullName, c.title].filter(Boolean).join(' • ')
+                        : (c.title || '-');
+
                     return `
                         <div class="${stCfg.cardBg} border ${stCfg.border} p-3 rounded-xl flex flex-col justify-between gap-2 min-w-[210px] shadow-xs hover:shadow-sm transition">
                             <div>
                                 <div class="flex items-center justify-between gap-1 mb-1">
-                                    <span class="font-bold text-slate-900 truncate">${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</span>
+                                    <span class="font-bold text-slate-900 truncate">${escapeHtml(primaryHeading)}</span>
                                     <button onclick="openEditModal('${c.id}')" title="Bearbeiten" class="text-slate-400 hover:text-slate-700 text-xs">
                                         <i class="fa-solid fa-pen"></i>
                                     </button>
                                 </div>
-                                <p class="text-[11px] font-medium text-slate-600 truncate">${escapeHtml(c.organization || c.title || '-')}</p>
+                                <p class="text-[11px] font-medium text-slate-600 truncate">${escapeHtml(secondarySubtitle || '-')}</p>
                                 ${c.scopeOfServices ? `<p class="text-[10px] text-slate-500 mt-1.5 line-clamp-2"><i class="fa-solid fa-clipboard-check text-sky-600 mr-1"></i>${escapeHtml(c.scopeOfServices)}</p>` : ''}
                             </div>
 
@@ -1139,17 +1145,25 @@
             container.innerHTML = filtered.map(c => {
                 const cStatus = c.status || 'NEU';
                 const stCfg = STATUS_CONFIG[cStatus] || STATUS_CONFIG['NEU'];
+                const personFullName = [c.firstName, c.lastName].filter(n => n && n !== 'Unbekannt').join(' ').trim();
+                const primaryHeading = c.organization || personFullName || 'Unbekannter Betrieb';
+                const secondarySubtitle = c.organization
+                    ? [personFullName, c.title].filter(Boolean).join(' • ')
+                    : (c.title || '');
+                const avatarInitials = c.organization
+                    ? c.organization.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('')
+                    : ((c.firstName ? c.firstName[0] : '') + (c.lastName ? c.lastName[0] : 'K'));
 
                 return `
                 <div class="${stCfg.cardBg} rounded-2xl border ${stCfg.border} p-5 shadow-sm hover:shadow-md transition group">
                     <div class="flex items-start justify-between gap-4">
                         <div class="flex items-center gap-3.5">
                             <div class="w-12 h-12 rounded-xl bg-white/80 border ${stCfg.border} flex items-center justify-center font-bold text-slate-800 text-lg shadow-sm group-hover:scale-105 transition">
-                                ${(c.firstName ? c.firstName[0] : '') + (c.lastName ? c.lastName[0] : 'K')}
+                                ${escapeHtml(avatarInitials || 'F')}
                             </div>
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
-                                    <h4 class="font-bold text-slate-900 text-base leading-tight">${escapeHtml(c.firstName)} ${escapeHtml(c.lastName)}</h4>
+                                    <h4 class="font-bold text-slate-900 text-base leading-tight">${escapeHtml(primaryHeading)}</h4>
                                     ${c.trade ? `
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100/90 text-amber-900 border border-amber-300">
                                             <i class="fa-solid fa-hammer text-[9px] mr-1"></i>${escapeHtml(c.trade)}
@@ -1157,7 +1171,7 @@
                                     ` : ''}
                                 </div>
                                 <p class="text-xs text-slate-600 font-medium mt-0.5">
-                                    ${escapeHtml(c.title)}${c.title && c.organization ? ' • ' : ''}${escapeHtml(c.organization)}
+                                    ${escapeHtml(secondarySubtitle)}
                                 </p>
                             </div>
                         </div>
