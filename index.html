@@ -232,8 +232,13 @@
                         class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-500">
                 </div>
 
-                <!-- Status Filter -->
-                <div class="w-full sm:w-auto flex items-center gap-2">
+                <!-- Gewerk & Status Filter -->
+                <div class="w-full sm:w-auto flex flex-wrap items-center gap-2">
+                    <select id="trade-filter" onchange="renderContacts()"
+                        class="w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-700 focus:bg-white focus:ring-2 focus:ring-sky-500">
+                        <option value="ALL">Alle Gewerke</option>
+                    </select>
+
                     <select id="status-filter" onchange="renderContacts()"
                         class="w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-700 focus:bg-white focus:ring-2 focus:ring-sky-500">
                         <option value="ALL">Alle Status</option>
@@ -1096,11 +1101,8 @@
                         ? [personFullName, c.title].filter(Boolean).join(' • ')
                         : (c.title || '-');
 
-                    const hours = getEffectiveOpeningHours(c);
-                    const openSt = hours ? evaluateOpeningStatus(hours) : null;
-
                     return `
-                        <div class="${stCfg.cardBg} border ${stCfg.border} p-3 rounded-xl flex flex-col justify-between gap-2 w-full h-[148px] overflow-hidden shadow-xs hover:shadow-sm transition">
+                        <div class="${stCfg.cardBg} border ${stCfg.border} p-3 rounded-xl flex flex-col justify-between gap-2 w-full h-[130px] overflow-hidden shadow-xs hover:shadow-sm transition">
                             <div class="min-w-0">
                                 <div class="flex items-center justify-between gap-1 mb-0.5">
                                     <span class="font-bold text-slate-900 text-xs truncate" title="${escapeHtml(primaryHeading)}">${escapeHtml(primaryHeading)}</span>
@@ -1109,15 +1111,9 @@
                                     </button>
                                 </div>
                                 <p class="text-[11px] font-medium text-slate-600 truncate" title="${escapeHtml(secondarySubtitle || '-')}">${escapeHtml(secondarySubtitle || '-')}</p>
-                                <p class="text-[10px] text-slate-500 mt-1 line-clamp-2 min-h-[26px]" title="${escapeHtml(c.scopeOfServices || '')}">
+                                <p class="text-[10px] text-slate-500 mt-1 line-clamp-2 min-h-[28px]" title="${escapeHtml(c.scopeOfServices || '')}">
                                     ${c.scopeOfServices ? `<i class="fa-solid fa-clipboard-check text-sky-600 mr-1"></i>${escapeHtml(c.scopeOfServices)}` : ''}
                                 </p>
-                                <div class="text-[10px] text-slate-600 mt-1 flex items-center justify-between gap-1 truncate min-h-[16px]" title="${escapeHtml(hours || 'Keine Öffnungszeiten hinterlegt')}">
-                                    ${hours ? `
-                                        <span class="truncate"><i class="fa-regular fa-clock text-sky-600 mr-1"></i>${escapeHtml(hours)}</span>
-                                        ${openSt ? `<span class="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-bold ${openSt.isOpen ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}"><span class="w-1.5 h-1.5 rounded-full ${openSt.isOpen ? 'bg-emerald-500' : 'bg-rose-500'}"></span>${openSt.isOpen ? 'Offen' : 'Zu'}</span>` : ''}
-                                    ` : `<span class="text-slate-400 italic"><i class="fa-regular fa-clock mr-1"></i>Keine Öffnungszeiten</span>`}
-                                </div>
                             </div>
 
                             <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between shrink-0">
@@ -1264,14 +1260,31 @@
             const emptyState = document.getElementById('empty-state');
             const searchVal = document.getElementById('search-input').value.toLowerCase();
             const statusFilter = document.getElementById('status-filter').value;
+            const tradeFilterEl = document.getElementById('trade-filter');
 
             if (!container || !emptyState) return;
+
+            // Gewerk-Filter-Dropdown dynamisch aus vorhandenen Kontakten befüllen
+            if (tradeFilterEl) {
+                const currentSelectedTrade = tradeFilterEl.value || 'ALL';
+                const uniqueTrades = [...new Set(contacts.map(c => (c.trade || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'de'));
+                tradeFilterEl.innerHTML = `<option value="ALL">Alle Gewerke (${contacts.length})</option>` +
+                    uniqueTrades.map(t => {
+                        const count = contacts.filter(c => (c.trade || '').trim() === t).length;
+                        return `<option value="${escapeHtml(t)}" ${t === currentSelectedTrade ? 'selected' : ''}>${escapeHtml(t)} (${count})</option>`;
+                    }).join('');
+                if (currentSelectedTrade !== 'ALL' && !uniqueTrades.includes(currentSelectedTrade)) {
+                    tradeFilterEl.value = 'ALL';
+                }
+            }
+            const tradeFilter = tradeFilterEl ? tradeFilterEl.value : 'ALL';
 
             const filtered = contacts.filter(c => {
                 const fullStr = `${c.firstName} ${c.lastName} ${c.organization} ${c.trade} ${c.scopeOfServices} ${c.title} ${c.email}`.toLowerCase();
                 const matchesSearch = fullStr.includes(searchVal);
                 const matchesStatus = statusFilter === 'ALL' || (c.status || 'NEU') === statusFilter;
-                return matchesSearch && matchesStatus;
+                const matchesTrade = tradeFilter === 'ALL' || (c.trade || '').trim() === tradeFilter;
+                return matchesSearch && matchesStatus && matchesTrade;
             });
 
             document.getElementById('contactCountBadge').innerText = `${contacts.length} Kontakt(e) gespeichert`;
