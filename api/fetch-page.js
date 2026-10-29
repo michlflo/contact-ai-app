@@ -100,7 +100,8 @@ export default async function handler(req, res) {
         return [metaHeader, ohSnippet, relevantBody.slice(0, maxLen)].filter(Boolean).join('\n');
     };
 
-    const get = async (u, timeoutMs = 8000) => {
+    let lastFetchError = '';
+    const fetchRawHtml = async (u, timeoutMs) => {
         const ctrl = new AbortController();
         const t = setTimeout(() => ctrl.abort(), timeoutMs);
         try {
@@ -112,13 +113,15 @@ export default async function handler(req, res) {
                     'Accept-Language': 'de-AT,de;q=0.9,en;q=0.8'
                 }
             });
-            if (!r.ok) return '';
+            if (!r.ok) {
+                lastFetchError = `HTTP ${r.status}`;
+                return '';
+            }
             const buf = await r.arrayBuffer();
             const ct = r.headers.get('content-type') || '';
             const headAscii = new TextDecoder('ascii').decode(buf.slice(0, 2048));
             const isLatin1 = /charset\s*=\s*(?:iso-8859-1|windows-1252|latin1)/i.test(ct) || /charset\s*=\s*(?:iso-8859-1|windows-1252|latin1)/i.test(headAscii);
             let decoded = new TextDecoder(isLatin1 ? 'windows-1252' : 'utf-8').decode(buf);
-            // Repariere doppelt UTF-8-kodierte Mojibake-Zeichen (z. B. "WÃ¼nsche" -> "Wünsche")
             if (/Ã[¤¶¼„–œŸ]/.test(decoded)) {
                 try {
                     const bytes = Uint8Array.from(decoded, c => c.charCodeAt(0) & 0xff);
@@ -127,11 +130,28 @@ export default async function handler(req, res) {
                 } catch {}
             }
             return decoded;
-        } catch {
+        } catch (err) {
+            lastFetchError = (err?.cause?.message || err?.cause?.code || err?.message || 'fetch error');
             return '';
         } finally {
             clearTimeout(t);
         }
+    };
+
+    // Falls der Zielserver Cloud-/AWS-IPs (Vercel) blockiert (Timeout/Geo-Block), über öffentlichen Proxy-Fallback abrufen
+    const get = async (u, timeoutMs = 5000) => {
+        const direct = await fetchRawHtml(u, timeoutMs);
+        if (direct) return direct;
+
+        const proxyUrls = [
+            `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+            `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+        ];
+        for (const pu of proxyUrls) {
+            const viaProxy = await fetchRawHtml(pu, 6000);
+            if (viaProxy && viaProxy.length > 100) return viaProxy;
+        }
+        return '';
     };
 
     // Entdecke echte Impressums- und Kontakt-Links direkt aus dem HTML der Startseite
@@ -182,6 +202,6 @@ export default async function handler(req, res) {
         .map(x => `[${x.label}]\n${x.t}`)
         .join('\n\n');
 
-    if (!text) return res.status(502).json({ error: 'Webseite konnte nicht geladen werden' });
+    if (!text) return res.status(502).json({ error: 'Webseite konnte nicht geladen werden', detail: lastFetchError });
     return res.status(200).json({ text });
 }
