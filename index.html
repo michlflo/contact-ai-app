@@ -470,6 +470,15 @@
                 </div>
 
                 <div>
+                    <label class="block font-semibold text-slate-700 mb-1">
+                        <i class="fa-regular fa-clock text-sky-600 mr-1"></i> Öffnungszeiten
+                    </label>
+                    <input type="text" id="form-openingHours"
+                        placeholder="z. B. Mo–Do 07:00–12:00, 13:00–16:00; Fr 07:00–12:00"
+                        class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500">
+                </div>
+
+                <div>
                     <label class="block font-semibold text-slate-700 mb-1">Notizen</label>
                     <textarea id="form-notes" rows="2"
                         class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:ring-2 focus:ring-sky-500"></textarea>
@@ -702,7 +711,8 @@
                     phone: { type: "STRING", description: "Telefonnummer / Handy" },
                     website: { type: "STRING", description: "Website URL" },
                     address: { type: "STRING", description: "Anschrift (Straße, Hausnummer, PLZ, Ort)" },
-                    notes: { type: "STRING", description: "Kurz zusammengefasste Zusatzinfos" }
+                    openingHours: { type: "STRING", description: "Öffnungszeiten im Format z. B. 'Mo-Do 07:00-12:00, 13:00-16:00; Fr 07:00-12:00'" },
+                    notes: { type: "STRING", description: "Kurz zusammengefasste Zusatzinfos (ohne Öffnungszeiten)" }
                 },
                 required: ["lastName"]
             }
@@ -797,7 +807,7 @@
 
                 // Präziser System-Prompt mit Anforderung exakter Gewerke & Daten
                 const systemPrompt = "Du bist ein hochpräziser KI-Extraktor für Firmenkontakte, Handwerk und Sanierung. Suche nach den exakten Firmen- und Impressumsdaten zur angegebenen Website/Domain (Ansprechpartner/Geschäftsführer, genaue Firma, Telefonnummer, E-Mail, Adresse PLZ/Ort). Bestimme präzise das Gewerk (z. B. Heizung & Sanitär, Elektro, Dachdecker, Maler) und den genauen Leistungsumfang (z. B. Gas- und Wasserinstallation, Badsanierung, Heizungsbau).";
-                const userQuery = `Extrahiere aus dem folgenden Webseiten-Text (${formattedUrl}) GENAU EINEN Kontakt (den Geschäftsführer/Ansprechpartner laut Impressum). Fülle ALLE Felder aus, soweit im Text vorhanden: firstName, lastName, organization (vollständiger Firmenname inkl. Rechtsform), title, email, phone, address (Straße, PLZ, Ort), website, trade (nur ein Gewerk aus der Liste im Schema), scopeOfServices (kommagetrennte Leistungen, z. B. Dachstühle, Holzriegelbau, Carports), notes (z. B. Öffnungszeiten, Firmensitz, UID). Schreibe nur in das jeweils passende Feld, nicht alles in ein Feld. Nutze nur Informationen aus dem Text:\n\n${pageText}`;
+                const userQuery = `Extrahiere aus dem folgenden Webseiten-Text (${formattedUrl}) GENAU EINEN Kontakt (den Geschäftsführer/Ansprechpartner laut Impressum). Fülle ALLE Felder aus, soweit im Text vorhanden: firstName, lastName, organization (vollständiger Firmenname inkl. Rechtsform), title, email, phone, address (Straße, PLZ, Ort), website, trade (nur ein Gewerk aus der Liste im Schema), scopeOfServices (kommagetrennte Leistungen, z. B. Dachstühle, Holzriegelbau, Carports), openingHours (Öffnungszeiten kompakt im Format 'Mo-Do 07:00-12:00, 13:00-16:00; Fr 07:00-12:00'), notes (weitere Infos wie Firmensitz, Firmenbuchnummer, UID – ohne Öffnungszeiten). Schreibe nur in das jeweils passende Feld, nicht alles in ein Feld. Nutze nur Informationen aus dem Text:\n\n${pageText}`;
 
                 const payload = {
                     contents: [{ parts: [{ text: userQuery }] }],
@@ -961,6 +971,7 @@
                         phone: item.phone || '',
                         website: item.website || sourceUrl || '',
                         address: item.address || '',
+                        openingHours: item.openingHours || '',
                         notes: item.notes || '',
                         createdAt: new Date().toLocaleDateString('de-DE')
                     };
@@ -1116,6 +1127,106 @@
             }).join('');
         }
 
+        // Öffnungszeiten auswerten und prüfen, ob aktuell geöffnet oder geschlossen ist
+        function evaluateOpeningStatus(hoursText) {
+            if (!hoursText || !hoursText.trim()) return null;
+            const s = hoursText
+                .replace(/montag/gi, 'Mo')
+                .replace(/dienstag/gi, 'Di')
+                .replace(/mittwoch/gi, 'Mi')
+                .replace(/donnerstag/gi, 'Do')
+                .replace(/freitag/gi, 'Fr')
+                .replace(/samstag/gi, 'Sa')
+                .replace(/sonntag/gi, 'So');
+
+            const dayIndexMap = { mo: 1, di: 2, mi: 3, do: 4, fr: 5, sa: 6, so: 0 };
+            const now = new Date();
+            const currentDay = now.getDay();
+            const currentMins = now.getHours() * 60 + now.getMinutes();
+
+            const dayRegex = /\b(Mo|Di|Mi|Do|Fr|Sa|So)(?:\s*(?:[-–—]|bis)\s*(Mo|Di|Mi|Do|Fr|Sa|So))?\b/gi;
+            const dayMatches = [...s.matchAll(dayRegex)];
+            const timeRegex = /(\d{1,2})(?:[:.](\d{2}))?\s*(?:Uhr)?\s*(?:[-–—]|bis)\s*(\d{1,2})(?:[:.](\d{2}))?/gi;
+
+            // Falls gar keine Uhrzeiten im String vorkommen, keine Open/Closed-Aussage treffen
+            if (!timeRegex.test(s)) return null;
+
+            const expandDays = (d1, d2) => {
+                const order = ['mo', 'di', 'mi', 'do', 'fr', 'sa', 'so'];
+                const i1 = order.indexOf(d1.toLowerCase());
+                if (!d2) return [dayIndexMap[order[i1]]];
+                const i2 = order.indexOf(d2.toLowerCase());
+                const res = [];
+                if (i1 <= i2) {
+                    for (let i = i1; i <= i2; i++) res.push(dayIndexMap[order[i]]);
+                } else {
+                    for (let i = i1; i < 7; i++) res.push(dayIndexMap[order[i]]);
+                    for (let i = 0; i <= i2; i++) res.push(dayIndexMap[order[i]]);
+                }
+                return res;
+            };
+
+            const checkTimesInSlice = (slice) => {
+                const tr = /(\d{1,2})(?:[:.](\d{2}))?\s*(?:Uhr)?\s*(?:[-–—]|bis)\s*(\d{1,2})(?:[:.](\d{2}))?/gi;
+                let m;
+                let openUntil = null;
+                let nextOpen = null;
+                while ((m = tr.exec(slice)) !== null) {
+                    const start = parseInt(m[1], 10) * 60 + parseInt(m[2] || '0', 10);
+                    const end = parseInt(m[3], 10) * 60 + parseInt(m[4] || '0', 10);
+                    if (currentMins >= start && currentMins < end) {
+                        const eh = String(m[3]).padStart(2, '0');
+                        const em = String(m[4] || '00').padStart(2, '0');
+                        openUntil = `${eh}:${em}`;
+                    } else if (currentMins < start && !nextOpen) {
+                        const sh = String(m[1]).padStart(2, '0');
+                        const sm = String(m[2] || '00').padStart(2, '0');
+                        nextOpen = `${sh}:${sm}`;
+                    }
+                }
+                return { openUntil, nextOpen };
+            };
+
+            // Ohne Wochentage: gilt Mo–Fr
+            if (dayMatches.length === 0) {
+                if (currentDay >= 1 && currentDay <= 5) {
+                    const { openUntil, nextOpen } = checkTimesInSlice(s);
+                    if (openUntil) return { isOpen: true, label: `Jetzt geöffnet (bis ${openUntil} Uhr)` };
+                    if (nextOpen) return { isOpen: false, label: `Geschlossen (öffnet um ${nextOpen} Uhr)` };
+                }
+                return { isOpen: false, label: 'Aktuell geschlossen' };
+            }
+
+            for (let i = 0; i < dayMatches.length; i++) {
+                const dm = dayMatches[i];
+                const days = expandDays(dm[1], dm[2]);
+                const sliceStart = dm.index + dm[0].length;
+                const sliceEnd = i + 1 < dayMatches.length ? dayMatches[i + 1].index : s.length;
+                const slice = s.slice(sliceStart, sliceEnd);
+
+                if (days.includes(currentDay)) {
+                    if (/geschlossen|ruhetag/i.test(slice)) {
+                        return { isOpen: false, label: 'Heute geschlossen' };
+                    }
+                    const { openUntil, nextOpen } = checkTimesInSlice(slice);
+                    if (openUntil) return { isOpen: true, label: `Jetzt geöffnet (bis ${openUntil} Uhr)` };
+                    if (nextOpen) return { isOpen: false, label: `Geschlossen (öffnet um ${nextOpen} Uhr)` };
+                }
+            }
+
+            return { isOpen: false, label: 'Aktuell geschlossen' };
+        }
+
+        // Fallback: falls Öffnungszeiten noch im Notizfeld älterer Kontakte stehen
+        function getEffectiveOpeningHours(c) {
+            if (c.openingHours && c.openingHours.trim()) return c.openingHours.trim();
+            if (c.notes) {
+                const m = c.notes.match(/Öffnungszeiten\s*:\s*([^\n|]+)/i);
+                if (m) return m[1].trim();
+            }
+            return '';
+        }
+
         // Render Contact Cards
         function renderContacts() {
             const container = document.getElementById('contact-list');
@@ -1242,6 +1353,27 @@
                                 <span>${escapeHtml(c.address)}</span>
                             </div>
                         ` : ''}
+
+                        ${(() => {
+                            const hours = getEffectiveOpeningHours(c);
+                            if (!hours) return '';
+                            const st = evaluateOpeningStatus(hours);
+                            const badgeHtml = st
+                                ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${st.isOpen ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-rose-100 text-rose-800 border-rose-300'}">
+                                        <span class="w-1.5 h-1.5 rounded-full ${st.isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}"></span>
+                                        ${escapeHtml(st.label)}
+                                   </span>`
+                                : '';
+                            return `
+                                <div class="flex items-start gap-2 sm:col-span-2 text-slate-700 mt-1 bg-white/75 p-2 rounded-lg border border-slate-200/80">
+                                    <i class="fa-regular fa-clock text-sky-600 w-4 mt-0.5"></i>
+                                    <div class="flex-1 flex flex-wrap items-center justify-between gap-2">
+                                        <span><strong class="text-slate-800">Öffnungszeiten:</strong> ${escapeHtml(hours)}</span>
+                                        ${badgeHtml}
+                                    </div>
+                                </div>
+                            `;
+                        })()}
                     </div>
 
                     ${c.notes ? `
@@ -1307,6 +1439,7 @@
                     document.getElementById('form-phone').value = c.phone || '';
                     document.getElementById('form-website').value = c.website || '';
                     document.getElementById('form-address').value = c.address || '';
+                    document.getElementById('form-openingHours').value = getEffectiveOpeningHours(c);
                     document.getElementById('form-notes').value = c.notes || '';
                     document.getElementById('modal-title').innerText = "Kontakt bearbeiten";
                 }
@@ -1346,6 +1479,7 @@
                 phone: document.getElementById('form-phone').value.trim(),
                 website: document.getElementById('form-website').value.trim(),
                 address: document.getElementById('form-address').value.trim(),
+                openingHours: document.getElementById('form-openingHours').value.trim(),
                 notes: document.getElementById('form-notes').value.trim()
             };
 

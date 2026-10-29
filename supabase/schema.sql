@@ -13,6 +13,7 @@ create table if not exists public.contacts (
     phone text default '',
     website text default '',
     address text default '',
+    opening_hours text default '',
     notes text default '',
     created_at_label text default '',
     created_at timestamptz not null default now(),

@@ -9,7 +9,7 @@
     const FIELDS = {
         firstName: 'first_name', lastName: 'last_name', organization: 'organization', trade: 'trade',
         scopeOfServices: 'scope_of_services', status: 'status', title: 'title', email: 'email',
-        phone: 'phone', website: 'website', address: 'address', notes: 'notes', createdAt: 'created_at_label'
+        phone: 'phone', website: 'website', address: 'address', openingHours: 'opening_hours', notes: 'notes', createdAt: 'created_at_label'
     };
 
     const toRow = (c) => {
